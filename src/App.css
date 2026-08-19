@@ -1,0 +1,204 @@
+.page-shell {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background:
+    linear-gradient(rgba(248, 244, 235, 0.8), rgba(243, 239, 230, 0.88)),
+    radial-gradient(circle at 15% 20%, rgba(245, 186, 73, 0.16), transparent 30%),
+    radial-gradient(circle at 85% 82%, rgba(11, 110, 79, 0.12), transparent 34%),
+    var(--page-background-image) center center / cover no-repeat;
+}
+
+.login-card,
+.route-card {
+  width: 100%;
+  max-width: 560px;
+  padding: 52px 48px;
+  border: 1px solid rgba(93, 82, 64, 0.1);
+  border-radius: 32px;
+  background: rgba(255, 250, 242, 0.9);
+  box-shadow:
+    0 24px 60px rgba(69, 55, 37, 0.08),
+    0 8px 24px rgba(69, 55, 37, 0.05);
+  backdrop-filter: blur(16px);
+}
+
+.card-heading {
+  margin-bottom: 36px;
+}
+
+.card-heading p,
+.route-card p {
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.72;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--text-h);
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.field input {
+  width: 100%;
+  padding: 18px 20px;
+  border: 1px solid rgba(78, 70, 50, 0.16);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text-h);
+  font-size: 1.04rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.field input::placeholder {
+  color: #9b948b;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: rgba(184, 92, 56, 0.65);
+  box-shadow: 0 0 0 4px rgba(216, 135, 56, 0.12);
+  transform: translateY(-1px);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 2px;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.checkbox input {
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.text-link {
+  color: #8b4429;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.text-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+.submit-button,
+.primary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 64px;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #b85c38 0%, #d88738 100%);
+  color: #fffaf2;
+  font-family: var(--heading);
+  font-size: 1.06rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(184, 92, 56, 0.2);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.submit-button:hover,
+.primary-link:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow: 0 17px 34px rgba(184, 92, 56, 0.25);
+}
+
+.submit-button:active,
+.primary-link:active {
+  transform: translateY(0);
+}
+
+.form-status {
+  color: var(--muted);
+  font-size: 0.96rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.signup-section {
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.route-card {
+  text-align: center;
+}
+
+.route-links {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    padding: 22px 16px;
+  }
+
+  .login-card,
+  .route-card {
+    max-width: 100%;
+    padding: 32px 24px;
+    border-radius: 24px;
+  }
+
+  .card-heading {
+    margin-bottom: 28px;
+  }
+
+  .card-heading p,
+  .route-card p {
+    font-size: 1rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
