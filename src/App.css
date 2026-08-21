@@ -101,6 +101,7 @@ body {
     0 24px 60px rgba(69, 55, 37, 0.08),
     0 8px 24px rgba(69, 55, 37, 0.05);
 
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 
@@ -503,6 +504,7 @@ body {
   box-shadow:
     0 24px 60px rgba(69, 55, 37, 0.08);
 
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 
@@ -733,6 +735,7 @@ body {
   box-shadow:
     0 24px 60px rgba(69, 55, 37, 0.08);
 
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 
@@ -963,6 +966,7 @@ body {
   box-shadow:
     0 24px 60px rgba(69, 55, 37, 0.08);
 
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 
