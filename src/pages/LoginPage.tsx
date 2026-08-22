@@ -2,42 +2,68 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { AuthUser } from '../types';
-import { login } from '../services/authService';
+import { developmentLogin, loginWithMicrosoft } from '../services/authService';
+import {
+  getMicrosoftIdentityToken,
+  isMicrosoftAuthConfigured,
+} from '../services/microsoftAuthService';
 import campusImage from '../assets/images/abacCampus.jpeg';
 import closeEye from '../assets/images/close-eye.png';
 import openEye from '../assets/images/open-eye.png';
 import { isAuEmail, MAX_PASSWORD_LENGTH } from '../utils/authValidation';
 import './LoginPage.css';
 
-export function LoginPage({ onLogin }: { onLogin: (user: AuthUser) => void }) {
+export function LoginPage({
+  onLogin,
+}: {
+  onLogin: (user: AuthUser) => void;
+}) {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [developmentEmail, setDevelopmentEmail] = useState('');
+  const [developmentPassword, setDevelopmentPassword] = useState('');
+  const [showDevelopmentPassword, setShowDevelopmentPassword] = useState(false);
+  const [developmentLoading, setDevelopmentLoading] = useState(false);
+  const microsoftConfigured = isMicrosoftAuthConfigured();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  async function handleMicrosoftLogin() {
     setErrorMessage('');
-
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!isAuEmail(normalizedEmail)) {
-      setErrorMessage('Enter a valid @au.edu email address.');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const auth = await login(normalizedEmail, password, rememberMe);
+      const idToken = await getMicrosoftIdentityToken();
+      const auth = await loginWithMicrosoft(idToken);
       onLogin(auth.user);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Login failed');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Microsoft sign-in failed.',
+      );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDevelopmentLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrorMessage('');
+    const email = developmentEmail.trim().toLowerCase();
+
+    if (!isAuEmail(email)) {
+      setErrorMessage('Enter a valid local @au.edu account email.');
+      return;
+    }
+
+    setDevelopmentLoading(true);
+    try {
+      const auth = await developmentLogin(email, developmentPassword);
+      onLogin(auth.user);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Development login failed.',
+      );
+    } finally {
+      setDevelopmentLoading(false);
     }
   }
 
@@ -47,12 +73,10 @@ export function LoginPage({ onLogin }: { onLogin: (user: AuthUser) => void }) {
         <aside className="role-login-campus">
           <img src={campusImage} alt="ABAC Campus" className="role-campus-image" />
           <div className="role-campus-overlay" />
-
           <div className="role-campus-copy">
             <h2>Find what matters.</h2>
             <p>One campus community, helping every item find its way home.</p>
           </div>
-
           <span className="role-campus-location">Assumption University</span>
         </aside>
 
@@ -67,86 +91,78 @@ export function LoginPage({ onLogin }: { onLogin: (user: AuthUser) => void }) {
           </button>
 
           <div className="role-form-heading">
-            <span className="role-login-kicker">Campus Lost &amp; Found</span>
-            <p>Students, staff, and administrators use the same AU login.</p>
+            <span className="role-login-kicker">Login</span>
+            <p>Sign in using your AU Microsoft account.</p>
           </div>
 
-          <form className="role-login-form" onSubmit={handleSubmit}>
-            <label className="role-field">
-              <span>Email</span>
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="user@au.edu"
-                autoComplete="username"
-                pattern="[^\s@]+@au\.edu"
-                maxLength={254}
-                required
-              />
-            </label>
-
-            <label className="role-field">
-              <span>Password</span>
-              <span className="role-password-wrapper">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  maxLength={MAX_PASSWORD_LENGTH}
-                  required
-                />
-                <button
-                  type="button"
-                  className="role-eye-button"
-                  onClick={() => setShowPassword((current) => !current)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  <img src={showPassword ? openEye : closeEye} alt="" />
-                </button>
+          <div className="role-login-form">
+            <button
+              type="button"
+              className="role-microsoft-button"
+              onClick={handleMicrosoftLogin}
+              disabled={loading || !microsoftConfigured}
+            >
+              <span className="role-microsoft-mark" aria-hidden="true">
+                <span /><span /><span /><span />
               </span>
-            </label>
-
-            <div className="role-login-options">
-              <label className="role-checkbox">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(event) => setRememberMe(event.target.checked)}
-                />
-                <span>Remember me</span>
-              </label>
-
-              <button
-                type="button"
-                className="role-text-button"
-                onClick={() => navigate('/forgot-password')}
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            <button type="submit" className="role-submit-button" disabled={loading}>
-              {loading ? 'Logging in...' : 'Log in'}
+              {loading ? 'Signing in...' : 'Sign in with Microsoft'}
             </button>
-          </form>
+
+          </div>
+
+          <p className="role-microsoft-notice">
+            Only authorized AU accounts can access this system.
+          </p>
 
           {errorMessage && (
             <p className="role-login-error" role="alert">{errorMessage}</p>
           )}
 
-          <p className="role-signup-prompt">
-            Don&apos;t have an account?{' '}
-            <button
-              type="button"
-              className="role-text-button"
-              onClick={() => navigate('/student-signup')}
-            >
-              Create account
-            </button>
-          </p>
+          {import.meta.env.DEV && (
+            <section className="role-development-login" aria-label="Development login">
+              <span>Development Login</span>
+              <form onSubmit={handleDevelopmentLogin}>
+                <label className="role-field">
+                  <span>Email</span>
+                  <input
+                    type="email"
+                    value={developmentEmail}
+                    onChange={(event) => setDevelopmentEmail(event.target.value)}
+                    autoComplete="username"
+                    placeholder="local-user@au.edu"
+                    maxLength={254}
+                    required
+                  />
+                </label>
+                <label className="role-field">
+                  <span>Password</span>
+                  <span className="role-password-wrapper">
+                    <input
+                      type={showDevelopmentPassword ? 'text' : 'password'}
+                      value={developmentPassword}
+                      onChange={(event) => setDevelopmentPassword(event.target.value)}
+                      autoComplete="current-password"
+                      maxLength={MAX_PASSWORD_LENGTH}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="role-eye-button"
+                      onClick={() => setShowDevelopmentPassword((value) => !value)}
+                      aria-label={showDevelopmentPassword ? 'Hide password' : 'Show password'}
+                    >
+                      <img src={showDevelopmentPassword ? openEye : closeEye} alt="" />
+                    </button>
+                  </span>
+                </label>
+                <button type="submit" className="role-submit-button" disabled={developmentLoading}>
+                  {developmentLoading ? 'Logging in...' : 'Development Login'}
+                </button>
+              </form>
+              <small>Uses a real local PostgreSQL account, application JWT, and backend RBAC.</small>
+            </section>
+          )}
+
         </div>
       </section>
     </main>
