@@ -104,7 +104,14 @@ function App() {
       <Route path="/" element={<HomePage items={items} />} />
       <Route path="/item/:id" element={<ItemDetailPage items={items} />} />
 
-      <Route path="/login" element={<LoginPage onLogin={finishLogin} />} />
+      <Route
+        path="/login"
+        element={
+          <LoginPage
+            onLogin={finishLogin}
+          />
+        }
+      />
 
       <Route path="/student-signup" element={<StudentSignupPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />

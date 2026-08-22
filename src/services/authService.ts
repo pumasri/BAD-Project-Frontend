@@ -29,10 +29,9 @@ export function clearAuth() {
   sessionStorage.removeItem(TOKEN_KEY);
 }
 
-export async function login(
+export async function developmentLogin(
   email: string,
   password: string,
-  rememberMe: boolean,
 ) {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
@@ -41,7 +40,21 @@ export async function login(
   });
   const auth = await readResponse(response) as AuthResponse;
 
-  saveToken(auth.token, rememberMe);
+  saveToken(auth.token, false);
+  return auth;
+}
+
+export async function loginWithMicrosoft(
+  idToken: string,
+) {
+  const response = await fetch(`${API_BASE_URL}/auth/microsoft`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken }),
+  });
+  const auth = await readResponse(response) as AuthResponse;
+
+  saveToken(auth.token, false);
   return auth;
 }
 
@@ -63,6 +76,24 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
   const data = await response.json() as { user: AuthUser };
   return data.user;
+}
+
+export async function authenticatedApiFetch(
+  path: string,
+  options: RequestInit = {},
+) {
+  const token = getToken();
+  if (!token) {
+    throw new Error('Authentication is required');
+  }
+
+  const headers = new Headers(options.headers);
+  headers.set('Authorization', `Bearer ${token}`);
+
+  return fetch(`${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`, {
+    ...options,
+    headers,
+  });
 }
 
 export async function registerStudent(
