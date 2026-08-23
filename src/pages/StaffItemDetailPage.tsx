@@ -91,10 +91,10 @@ export function StaffItemDetailPage({
                   setStatus(event.target.value as ItemStatus)
                 }
               >
-                <option value="OPEN">Available</option>
-                <option value="MATCHED">Potential Match</option>
-                <option value="CLAIM_IN_PROGRESS">Under Review</option>
-                <option value="RESOLVED">Returned</option>
+                <option value="OPEN">Open</option>
+                <option value="MATCHED">Matched</option>
+                <option value="CLAIM_IN_PROGRESS">Claim In Progress</option>
+                <option value="RESOLVED">Resolved</option>
                 <option value="DONATED">Donated</option>
                 <option value="DISPOSED">Disposed</option>
                 <option value="ARCHIVED">Archived</option>

@@ -1,98 +1,203 @@
-import { useEffect, useState } from 'react';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
-import type { Role, Item } from './types';
-import { initialItems, loginPages } from './data/mockData';
+import { useState, type ReactNode } from 'react';
+import {
+  Routes,
+  Route,
+  useNavigate,
+  Navigate,
+} from 'react-router-dom';
+
+import type { Role, Item, StudentClaim } from './types';
+
+import {
+  initialItems,
+  loginPages,
+} from './data/mockData';
 
 import { HomePage } from './pages/HomePage';
 import { ItemDetailPage } from './pages/ItemDetailPage';
 import { LoginPage } from './pages/LoginPage';
+
+import { StudentSignupPage } from './pages/StudentSignupPage';
+import { StudentHome } from './pages/StudentHome';
+import { StudentFindItemPage } from './pages/StudentFindItemPage';
+import { StudentReportLostItemPage } from './pages/StudentReportLostItemPage';
+import { StudentClaimsPage } from './pages/StudentClaimsPage';
+import { StudentClaimDetailsPage } from './pages/StudentClaimDetailsPage';
+import { StudentProfilePage } from './pages/StudentProfilePage';
+
 import { StaffDashboard } from './pages/StaffDashboard';
+import { StaffClaimsPage } from './pages/StaffClaimsPage';
+import { StaffClaimDetailsPage } from './pages/StaffClaimDetailsPage';
+import { StaffProfilePage } from './pages/StaffProfilePage';
 import { StaffManageItemsPage } from './pages/StaffManageItemsPage';
 import { StaffItemDetailPage } from './pages/StaffItemDetailPage';
 import { ReportFoundItemPage } from './pages/ReportFoundItemPage';
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { StudentSignupPage } from './pages/StudentSignupPage';
+
 import { AdminDashboard } from './pages/AdminDashboard';
-import { StudentHome } from './pages/StudentHome';
+import { AdminUsersPage } from './pages/AdminUsersPage';
+import { AdminCategoriesPage } from './pages/AdminCategoriesPage';
+import { AdminAuditLogsPage } from './pages/AdminAuditLogsPage';
+import { AdminApiIntegrationsPage } from './pages/AdminApiIntegrationsPage';
+import { AdminProfilePage } from './pages/AdminProfilePage';
+
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 
 import './App.css';
 
-const API_URL = 'http://localhost:5050';
+// ==========================================
+// FRONTEND ROLE PROTECTION
+// ==========================================
+
+function RequireAuth({
+  currentRole,
+  allowedRole,
+  loginPath,
+  children,
+}: {
+  currentRole: Role;
+  allowedRole: Exclude<Role, null>;
+  loginPath: string;
+  children: ReactNode;
+}) {
+  if (currentRole !== allowedRole) {
+    return (
+      <Navigate
+        to={loginPath}
+        replace
+      />
+    );
+  }
+
+  return <>{children}</>;
+}
 
 function App() {
   const navigate = useNavigate();
+
   const [items, setItems] = useState<Item[]>(initialItems);
+
+  // Frontend-only mock authentication
   const [role, setRole] = useState<Role>(null);
 
-  useEffect(() => {
-    async function checkBackend() {
-      try {
-        const response = await fetch(`${API_URL}/api/health`);
-        if (!response.ok) {
-          throw new Error(`Backend returned ${response.status}`);
-        }
-        const data = await response.json();
-        console.log('Backend connected:', data);
-      } catch (error) {
-        console.error('Backend connection failed:', error);
-      }
-    }
-    checkBackend();
-  }, []);
+  const [studentClaims, setStudentClaims] = useState<StudentClaim[]>([
+    {
+      id: 1,
+      item: 'Black Wallet',
+      category: 'Wallet',
+      status: 'Under Review',
+      date: 'August 21, 2026',
+    },
+    {
+      id: 2,
+      item: 'AirPods Case',
+      category: 'Electronics',
+      status: 'Potential Match',
+      date: 'August 19, 2026',
+    },
+  ]);
+
+  function handleAddClaim(claim: StudentClaim) {
+    setStudentClaims([claim, ...studentClaims]);
+  }
+
+  // ==========================================
+  // LOGIN
+  // ==========================================
 
   function loginAs(newRole: Role) {
     setRole(newRole);
+
     if (newRole === 'student') {
       navigate('/student-home');
-    } else if (newRole === 'staff') {
+      return;
+    }
+
+    if (newRole === 'staff') {
       navigate('/staff-dashboard');
-    } else if (newRole === 'admin') {
+      return;
+    }
+
+    if (newRole === 'admin') {
       navigate('/admin-dashboard');
+      return;
     }
   }
+
+  // ==========================================
+  // LOGOUT
+  // ==========================================
 
   function logout() {
     setRole(null);
     navigate('/');
   }
 
-  function handleAddItem(item: Omit<Item, 'id' | 'status'>) {
+  // ==========================================
+  // ADD FOUND ITEM
+  // ==========================================
+
+  function handleAddItem(
+    item: Omit<Item, 'id' | 'status'>
+  ) {
     const newItem: Item = {
       ...item,
-      id: items.length > 0 ? Math.max(...items.map((i) => i.id)) + 1 : 1,
+      id:
+        items.length > 0
+          ? Math.max(
+              ...items.map(
+                (currentItem) => currentItem.id
+              )
+            ) + 1
+          : 1,
       status: 'OPEN',
     };
-    setItems((currentItems) => [newItem, ...currentItems]);
+
+    setItems((currentItems) => [
+      newItem,
+      ...currentItems,
+    ]);
+
     navigate('/staff-dashboard');
   }
+
+  // ==========================================
+  // UPDATE ITEM
+  // ==========================================
 
   function updateItem(updatedItem: Item) {
     setItems((currentItems) =>
       currentItems.map((item) =>
-        item.id === updatedItem.id ? updatedItem : item
+        item.id === updatedItem.id
+          ? updatedItem
+          : item
       )
     );
   }
 
-  const RequireAuth = ({
-    allowedRole,
-    loginPath,
-    children,
-  }: {
-    allowedRole: Role;
-    loginPath: string;
-    children: JSX.Element;
-  }) => {
-    if (role !== allowedRole) {
-      return <Navigate to={loginPath} replace />;
-    }
-    return children;
-  };
-
   return (
     <Routes>
-      <Route path="/" element={<HomePage items={items} />} />
-      <Route path="/item/:id" element={<ItemDetailPage items={items} />} />
+
+      {/* ======================================
+          PUBLIC
+      ====================================== */}
+
+      <Route
+        path="/"
+        element={
+          <HomePage items={items} />
+        }
+      />
+
+      <Route
+        path="/item/:id"
+        element={
+          <ItemDetailPage items={items} />
+        }
+      />
+
+      {/* ======================================
+          STUDENT
+      ====================================== */}
 
       <Route
         path="/student-login"
@@ -103,6 +208,102 @@ function App() {
           />
         }
       />
+
+      <Route
+        path="/student-signup"
+        element={
+          <StudentSignupPage />
+        }
+      />
+
+      <Route
+        path="/student-home"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="student"
+            loginPath="/student-login"
+          >
+            <StudentHome
+              onLogout={logout}
+              claims={studentClaims}
+            />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/student-find-item"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="student"
+            loginPath="/student-login"
+          >
+            <StudentFindItemPage items={items} />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/student-report-lost"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="student"
+            loginPath="/student-login"
+          >
+            <StudentReportLostItemPage onSubmitClaim={handleAddClaim} />
+          </RequireAuth>
+        }
+      />
+
+      {/* Student Claims */}
+      <Route
+        path="/student-claims"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="student"
+            loginPath="/student-login"
+          >
+            <StudentClaimsPage claims={studentClaims} />
+          </RequireAuth>
+        }
+      />
+
+      {/* Student Claim Details */}
+      <Route
+        path="/student-claims/:id"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="student"
+            loginPath="/student-login"
+          >
+            <StudentClaimDetailsPage claims={studentClaims} />
+          </RequireAuth>
+        }
+      />
+
+      {/* Student Profile */}
+      <Route
+        path="/student-profile"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="student"
+            loginPath="/student-login"
+          >
+            <StudentProfilePage />
+          </RequireAuth>
+        }
+      />
+
+      {/* ======================================
+          STAFF
+      ====================================== */}
+
       <Route
         path="/staff-login"
         element={
@@ -112,6 +313,111 @@ function App() {
           />
         }
       />
+
+      <Route
+        path="/staff-dashboard"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="staff"
+            loginPath="/staff-login"
+          >
+            <StaffDashboard
+              items={items}
+            />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/staff/items"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="staff"
+            loginPath="/staff-login"
+          >
+            <StaffManageItemsPage
+              items={items}
+            />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/staff/items/:id"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="staff"
+            loginPath="/staff-login"
+          >
+            <StaffItemDetailPage
+              items={items}
+              onUpdateItem={updateItem}
+            />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/staff/report-item"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="staff"
+            loginPath="/staff-login"
+          >
+            <ReportFoundItemPage
+              onSubmitItem={handleAddItem}
+            />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/staff/claims"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="staff"
+            loginPath="/staff-login"
+          >
+            <StaffClaimsPage claims={studentClaims} />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/staff/claims/:id"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="staff"
+            loginPath="/staff-login"
+          >
+            <StaffClaimDetailsPage claims={studentClaims} />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/staff-profile"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="staff"
+            loginPath="/staff-login"
+          >
+            <StaffProfilePage />
+          </RequireAuth>
+        }
+      />
+
+      {/* ======================================
+          ADMIN
+      ====================================== */}
+
       <Route
         path="/admin-login"
         element={
@@ -122,62 +428,109 @@ function App() {
         }
       />
 
-      <Route path="/student-signup" element={<StudentSignupPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
-      <Route
-        path="/student-home"
-        element={
-          <RequireAuth allowedRole="student" loginPath="/student-login">
-            <StudentHome onLogout={logout} />
-          </RequireAuth>
-        }
-      />
-
-      <Route
-        path="/staff-dashboard"
-        element={
-          <RequireAuth allowedRole="staff" loginPath="/staff-login">
-            <StaffDashboard items={items} onLogout={logout} />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/staff/items"
-        element={
-          <RequireAuth allowedRole="staff" loginPath="/staff-login">
-            <StaffManageItemsPage items={items} />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/staff/items/:id"
-        element={
-          <RequireAuth allowedRole="staff" loginPath="/staff-login">
-            <StaffItemDetailPage items={items} onUpdateItem={updateItem} />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/staff/report-item"
-        element={
-          <RequireAuth allowedRole="staff" loginPath="/staff-login">
-            <ReportFoundItemPage onSubmitItem={handleAddItem} />
-          </RequireAuth>
-        }
-      />
-
       <Route
         path="/admin-dashboard"
         element={
-          <RequireAuth allowedRole="admin" loginPath="/admin-login">
-            <AdminDashboard onLogout={logout} />
+          <RequireAuth
+            currentRole={role}
+            allowedRole="admin"
+            loginPath="/admin-login"
+          >
+            <AdminDashboard />
           </RequireAuth>
         }
       />
 
-      {/* Fallback route */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route
+        path="/admin-users"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="admin"
+            loginPath="/admin-login"
+          >
+            <AdminUsersPage />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/admin-categories"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="admin"
+            loginPath="/admin-login"
+          >
+            <AdminCategoriesPage />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/admin-audit-logs"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="admin"
+            loginPath="/admin-login"
+          >
+            <AdminAuditLogsPage />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/admin-api-integrations"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="admin"
+            loginPath="/admin-login"
+          >
+            <AdminApiIntegrationsPage />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/admin-profile"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="admin"
+            loginPath="/admin-login"
+          >
+            <AdminProfilePage />
+          </RequireAuth>
+        }
+      />
+
+      {/* ======================================
+          FORGOT PASSWORD
+      ====================================== */}
+
+      <Route
+        path="/forgot-password"
+        element={
+          <ForgotPasswordPage />
+        }
+      />
+
+      {/* ======================================
+          FALLBACK
+      ====================================== */}
+
+      <Route
+        path="*"
+        element={
+          <Navigate
+            to="/"
+            replace
+          />
+        }
+      />
+
     </Routes>
   );
 }

@@ -28,3 +28,13 @@ export type LoginPageConfig = {
   emailPlaceholder: string;
   showSignup?: boolean;
 };
+
+export type StudentClaim = {
+  id: number;
+  item: string;
+  category: string;
+  status: string;
+  date: string;
+  location?: string;
+  description?: string;
+};

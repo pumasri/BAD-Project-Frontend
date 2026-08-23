@@ -1,11 +1,25 @@
 import { useState, CSSProperties } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Item } from '../types';
 import { campusImage } from '../utils';
 
-export function ItemDetailPage({ item }: { item: Item }) {
+export function ItemDetailPage({ items }: { items: Item[] }) {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [showLoginMessage, setShowLoginMessage] = useState(false);
+
+  const item = items.find((i) => i.id.toString() === id);
+
+  if (!item) {
+    return (
+      <main className="page-shell" style={{ '--page-background-image': `url(${campusImage})` } as CSSProperties}>
+        <section className="detail-card">
+          <h1>Item not found</h1>
+          <button type="button" className="detail-back-button" onClick={() => navigate('/')}>← Back to Lost &amp; Found</button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main

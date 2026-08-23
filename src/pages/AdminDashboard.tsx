@@ -1,7 +1,9 @@
 import { CSSProperties } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { campusImage } from '../utils';
 
-export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
+export function AdminDashboard() {
+  const navigate = useNavigate();
   return (
     <main
       className="page-shell"
@@ -22,29 +24,35 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           <button
             type="button"
             className="dashboard-logout"
-            onClick={onLogout}
+            onClick={() => navigate('/admin-profile')}
           >
-            Log out
+            Profile
           </button>
         </div>
 
         <div className="dashboard-grid">
-          <button type="button" className="dashboard-action-card">
+          <button type="button" className="dashboard-action-card" onClick={() => navigate('/admin-users')}>
             <span className="dashboard-icon">+</span>
             <strong>User Management</strong>
             <p>Manage staff and user accounts.</p>
           </button>
 
-          <button type="button" className="dashboard-action-card">
+          <button type="button" className="dashboard-action-card" onClick={() => navigate('/admin-categories')}>
             <span className="dashboard-icon">#</span>
             <strong>Categories</strong>
             <p>Add or remove item categories.</p>
           </button>
 
-          <button type="button" className="dashboard-action-card">
+          <button type="button" className="dashboard-action-card" onClick={() => navigate('/admin-audit-logs')}>
             <span className="dashboard-icon">◷</span>
             <strong>Audit Logs</strong>
             <p>Review system activity and records.</p>
+          </button>
+
+          <button type="button" className="dashboard-action-card" onClick={() => navigate('/admin-api-integrations')}>
+            <span className="dashboard-icon">🔗</span>
+            <strong>API Integrations</strong>
+            <p>Manage API keys and webhooks.</p>
           </button>
         </div>
       </section>
