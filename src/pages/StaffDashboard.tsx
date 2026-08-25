@@ -5,10 +5,8 @@ import { campusImage } from '../utils';
 
 export function StaffDashboard({
   items,
-  onLogout,
 }: {
   items: Item[];
-  onLogout: () => void;
 }) {
   const navigate = useNavigate();
   const recentItems = items.slice(0, 3);
@@ -35,9 +33,9 @@ export function StaffDashboard({
           <button
             type="button"
             className="dashboard-logout"
-            onClick={onLogout}
+            onClick={() => navigate('/staff-profile')}
           >
-            Log out
+            Profile
           </button>
         </div>
 
@@ -67,11 +65,13 @@ export function StaffDashboard({
           <button
             type="button"
             className="dashboard-action-card"
+            onClick={() => navigate('/staff/claims')}
           >
             <span className="dashboard-icon">✓</span>
             <strong>Claims</strong>
             <p>Review student ownership claims.</p>
           </button>
+
         </div>
 
         <div className="staff-recent-section">

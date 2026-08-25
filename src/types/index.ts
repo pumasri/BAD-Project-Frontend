@@ -31,3 +31,22 @@ export type Item = {
   image?: string;
   status: ItemStatus;
 };
+
+export type LoginPageConfig = {
+  role: 'student' | 'staff' | 'admin';
+  title: string;
+  description: string;
+  emailLabel: string;
+  emailPlaceholder: string;
+  showSignup?: boolean;
+};
+
+export type StudentClaim = {
+  id: number;
+  item: string;
+  category: string;
+  status: string;
+  date: string;
+  location?: string;
+  description?: string;
+};
