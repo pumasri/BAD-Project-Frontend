@@ -3,6 +3,26 @@ import type { AuthResponse, AuthUser } from '../types';
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:5050/api';
 const TOKEN_KEY = 'authToken';
+const VALID_ROLES = new Set(['STUDENT', 'STAFF', 'ADMIN']);
+
+function requireAuthUser(value: unknown): AuthUser {
+  if (!value || typeof value !== 'object') {
+    throw new Error('The authenticated account is invalid.');
+  }
+
+  const user = value as Partial<AuthUser>;
+  if (
+    typeof user.id !== 'string' ||
+    typeof user.email !== 'string' ||
+    typeof user.name !== 'string' ||
+    typeof user.role !== 'string' ||
+    !VALID_ROLES.has(user.role)
+  ) {
+    throw new Error('Your account role is missing or invalid.');
+  }
+
+  return user as AuthUser;
+}
 
 async function readResponse(response: Response) {
   const data = await response.json();
@@ -29,30 +49,18 @@ export function clearAuth() {
   sessionStorage.removeItem(TOKEN_KEY);
 }
 
-export async function developmentLogin(
-  email: string,
-  password: string,
-) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  const auth = await readResponse(response) as AuthResponse;
-
-  saveToken(auth.token, false);
-  return auth;
+export function getMicrosoftLoginUrl() {
+  return `${API_BASE_URL}/auth/microsoft`;
 }
 
-export async function loginWithMicrosoft(
-  idToken: string,
-) {
-  const response = await fetch(`${API_BASE_URL}/auth/microsoft`, {
+export async function completeMicrosoftLogin(code: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/microsoft/exchange`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idToken }),
+    body: JSON.stringify({ code }),
   });
   const auth = await readResponse(response) as AuthResponse;
+  auth.user = requireAuthUser(auth.user);
 
   saveToken(auth.token, false);
   return auth;
@@ -75,7 +83,23 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   }
 
   const data = await response.json() as { user: AuthUser };
-  return data.user;
+  return requireAuthUser(data.user);
+}
+
+export async function logoutSession() {
+  const token = getToken();
+  clearAuth();
+
+  if (!token) return;
+
+  try {
+    await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    // Local logout must still complete if the backend is unavailable.
+  }
 }
 
 export async function authenticatedApiFetch(
