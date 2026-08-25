@@ -2,11 +2,14 @@ import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Item } from '../types';
 import { campusImage } from '../utils';
+import { LogoutButton } from '../components/LogoutButton';
 
 export function StaffDashboard({
   items,
+  onLogout,
 }: {
   items: Item[];
+  onLogout: () => void | Promise<void>;
 }) {
   const navigate = useNavigate();
   const recentItems = items.slice(0, 3);
@@ -30,13 +33,16 @@ export function StaffDashboard({
             </p>
           </div>
 
-          <button
-            type="button"
-            className="dashboard-logout"
-            onClick={() => navigate('/staff-profile')}
-          >
-            Profile
-          </button>
+          <div className="dashboard-header-actions">
+            <button
+              type="button"
+              className="dashboard-logout"
+              onClick={() => navigate('/staff-profile')}
+            >
+              Profile
+            </button>
+            <LogoutButton onLogout={onLogout} />
+          </div>
         </div>
 
         <div className="dashboard-grid">

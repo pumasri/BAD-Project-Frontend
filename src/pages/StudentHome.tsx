@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { campusImage } from '../utils';
+import { LogoutButton } from '../components/LogoutButton';
 
 
 
@@ -30,7 +31,13 @@ const mockRecentItems = [
   },
 ];
 
-export function StudentHome({ onLogout, claims }: { onLogout: () => void, claims: StudentClaim[] }) {
+export function StudentHome({
+  onLogout,
+  claims,
+}: {
+  onLogout: () => void | Promise<void>;
+  claims: StudentClaim[];
+}) {
   const navigate = useNavigate();
 
   return (
@@ -54,13 +61,7 @@ export function StudentHome({ onLogout, claims }: { onLogout: () => void, claims
             </p>
           </div>
 
-          <button
-            type="button"
-            className="dashboard-logout"
-            onClick={onLogout}
-          >
-            Log out
-          </button>
+          <LogoutButton onLogout={onLogout} />
         </header>
 
         {/* Quick Actions */}

@@ -1,6 +1,6 @@
-/* =================================
+/* ---
    RESET / PAGE BASE
-================================= */
+--- */
 
 html,
 body,
@@ -20,9 +20,9 @@ body {
   overflow-x: hidden;
 }
 
-/* =================================
+/* ---
    GLOBAL PAGE BACKGROUND
-================================= */
+--- */
 
 .page-shell {
   position: relative;
@@ -74,9 +74,9 @@ body {
   z-index: 1;
 }
 
-/* =================================
+/* ---
    PUBLIC HOME PAGE
-================================= */
+--- */
 
 .home-shell {
   align-items: flex-start;
@@ -105,9 +105,9 @@ body {
   backdrop-filter: blur(16px);
 }
 
-/* =================================
+/* ---
    HOME HEADER
-================================= */
+--- */
 
 .home-header {
   display: flex;
@@ -155,9 +155,9 @@ body {
   line-height: 1.7;
 }
 
-/* =================================
+/* ---
    HOME LOGIN LINKS
-================================= */
+--- */
 
 .home-auth-links {
   display: flex;
@@ -195,9 +195,9 @@ body {
   transform: translateY(-1px);
 }
 
-/* =================================
+/* ---
    SEARCH
-================================= */
+--- */
 
 .search-form {
   display: flex;
@@ -255,9 +255,9 @@ body {
   filter: brightness(1.05);
 }
 
-/* =================================
+/* ---
    ITEMS SECTION
-================================= */
+--- */
 
 .items-section {
   width: 100%;
@@ -298,9 +298,9 @@ body {
   cursor: pointer;
 }
 
-/* =================================
+/* ---
    ITEMS GRID
-================================= */
+--- */
 
 .items-grid {
   display: grid;
@@ -448,9 +448,9 @@ body {
   transform: translateY(-1px);
 }
 
-/* =================================
+/* ---
    EMPTY ITEMS
-================================= */
+--- */
 
 .empty-items {
   grid-column: 1 / -1;
@@ -485,9 +485,9 @@ body {
   line-height: 1.7;
 }
 
-/* =================================
+/* ---
    DETAIL PAGE
-================================= */
+--- */
 
 .detail-card {
   width: 100%;
@@ -715,9 +715,9 @@ body {
   cursor: pointer;
 }
 
-/* =================================
+/* ---
    LOGIN / FORM CARDS
-================================= */
+--- */
 
 .login-card,
 .report-card {
@@ -761,9 +761,9 @@ body {
   line-height: 1.6;
 }
 
-/* =================================
+/* ---
    FORMS
-================================= */
+--- */
 
 .login-form,
 .report-form {
@@ -912,9 +912,9 @@ body {
   text-align: center;
 }
 
-/* =================================
+/* ---
    REPORT FORM
-================================= */
+--- */
 
 .report-card {
   max-width: 780px;
@@ -947,9 +947,9 @@ body {
   object-fit: cover;
 }
 
-/* =================================
+/* ---
    DASHBOARD
-================================= */
+--- */
 
 .dashboard-card {
   width: 100%;
@@ -978,6 +978,95 @@ body {
   gap: 24px;
 
   margin-bottom: 34px;
+}
+
+.dashboard-header-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.admin-profile-page {
+  max-width: 760px;
+}
+
+.admin-profile-summary {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 28px;
+  border: 1px solid rgba(89, 74, 58, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.admin-profile-avatar {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border-radius: 16px;
+  background: #3f3932;
+  color: #fff;
+  font-size: 1.65rem;
+  font-weight: 750;
+}
+
+.admin-profile-identity {
+  min-width: 0;
+}
+
+.admin-profile-role {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: #9b5b40;
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-profile-identity h2 {
+  margin: 0 0 5px;
+  color: #4b4035;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+}
+
+.admin-profile-identity p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #887b6e;
+}
+
+.admin-profile-logout {
+  padding: 10px 16px;
+  border: 1px solid rgba(172, 73, 58, 0.25);
+  border-radius: 10px;
+  background: transparent;
+  color: #a44638;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.admin-profile-logout:hover {
+  border-color: rgba(172, 73, 58, 0.45);
+  background: rgba(172, 73, 58, 0.07);
+}
+
+@media (max-width: 620px) {
+  .admin-profile-summary {
+    grid-template-columns: auto 1fr;
+    padding: 22px;
+  }
+
+  .admin-profile-logout {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
 }
 
 .dashboard-header h1 {
@@ -1094,9 +1183,9 @@ body {
   line-height: 1.55;
 }
 
-/* =================================
+/* ---
    STAFF RECENT ITEMS
-================================= */
+--- */
 
 .staff-recent-section {
   width: 100%;
@@ -1225,9 +1314,9 @@ body {
   font-size: 0.95rem;
 }
 
-/* =================================
+/* ---
    STAFF MANAGE ITEMS
-================================= */
+--- */
 
 .staff-item-toolbar {
   display: grid;
@@ -1460,9 +1549,9 @@ body {
   transform: translateY(-1px);
 }
 
-/* =================================
+/* ---
    MOBILE
-================================= */
+--- */
 
 @media (max-width: 900px) {
 
@@ -1598,9 +1687,9 @@ body {
   }
 }
 
-/* =================================
+/* ---
    STUDENT DASHBOARD
-================================= */
+--- */
 
 .student-shell {
   padding-top: 32px;
@@ -1729,9 +1818,9 @@ body {
   text-decoration: underline;
 }
 
-/* =================================
+/* ---
    STUDENT ACTION CARDS
-================================= */
+--- */
 
 .student-action-grid {
   display: grid;
@@ -1839,9 +1928,9 @@ body {
   font-weight: 700;
 }
 
-/* =================================
+/* ---
    STUDENT STATS
-================================= */
+--- */
 
 .student-stat-grid {
   display: grid;
@@ -1894,9 +1983,9 @@ body {
   font-size: 0.82rem;
 }
 
-/* =================================
+/* ---
    STUDENT CLAIMS
-================================= */
+--- */
 
 .student-claims-list {
   display: flex;
@@ -2018,9 +2107,9 @@ body {
   color: #527d5c;
 }
 
-/* =================================
+/* ---
    STUDENT RECENT ITEMS
-================================= */
+--- */
 
 .student-items-grid {
   display: grid;
@@ -2130,9 +2219,9 @@ body {
   margin-bottom: 4px;
 }
 
-/* =================================
+/* ---
    STUDENT PROFILE
-================================= */
+--- */
 
 .student-profile-card {
   display: flex;
@@ -2214,9 +2303,9 @@ body {
   background: rgba(163, 93, 63, 0.11);
 }
 
-/* =================================
+/* ---
    LOST ITEM REPORT PAGE
-================================= */
+--- */
 
 .report-page-card {
   width: 100%;
@@ -2261,9 +2350,9 @@ body {
   line-height: 1.7;
 }
 
-/* =================================
+/* ---
    FORM SECTIONS
-================================= */
+--- */
 
 .lost-item-form {
   display: flex;
@@ -2344,9 +2433,9 @@ body {
   line-height: 1.6;
 }
 
-/* =================================
+/* ---
    IMAGE UPLOAD
-================================= */
+--- */
 
 .image-upload {
   min-height: 190px;
@@ -2416,9 +2505,9 @@ body {
   font-size: 0.8rem;
 }
 
-/* =================================
+/* ---
    REPORT SUBMIT
-================================= */
+--- */
 
 .report-submit-area {
   display: flex;
@@ -2460,9 +2549,9 @@ body {
   width: auto;
 }
 
-/* =================================
+/* ---
    SUCCESS CARD
-================================= */
+--- */
 
 .success-card {
   width: 100%;
@@ -2533,9 +2622,9 @@ body {
   width: auto;
 }
 
-/* =================================
+/* ---
    RESPONSIVE
-================================= */
+--- */
 
 @media (max-width: 900px) {
   .student-dashboard,

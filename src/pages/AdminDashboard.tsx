@@ -1,8 +1,13 @@
 import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { campusImage } from '../utils';
+import { LogoutButton } from '../components/LogoutButton';
 
-export function AdminDashboard() {
+export function AdminDashboard({
+  onLogout,
+}: {
+  onLogout: () => void | Promise<void>;
+}) {
   const navigate = useNavigate();
   return (
     <main
@@ -21,13 +26,16 @@ export function AdminDashboard() {
             <p>Manage users, categories, audit logs, and system settings.</p>
           </div>
 
-          <button
-            type="button"
-            className="dashboard-logout"
-            onClick={() => navigate('/admin-profile')}
-          >
-            Profile
-          </button>
+          <div className="dashboard-header-actions">
+            <button
+              type="button"
+              className="dashboard-logout"
+              onClick={() => navigate('/admin-profile')}
+            >
+              Profile
+            </button>
+            <LogoutButton onLogout={onLogout} />
+          </div>
         </div>
 
         <div className="dashboard-grid">

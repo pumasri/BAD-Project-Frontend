@@ -1,70 +1,59 @@
-import { useState } from 'react';
-import type { FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { AuthUser } from '../types';
-import { developmentLogin, loginWithMicrosoft } from '../services/authService';
-import {
-  getMicrosoftIdentityToken,
-  isMicrosoftAuthConfigured,
-} from '../services/microsoftAuthService';
+import { completeMicrosoftLogin } from '../services/authService';
+import { startMicrosoftLogin } from '../services/microsoftAuthService';
 import campusImage from '../assets/images/abacCampus.jpeg';
-import closeEye from '../assets/images/close-eye.png';
-import openEye from '../assets/images/open-eye.png';
-import { isAuEmail, MAX_PASSWORD_LENGTH } from '../utils/authValidation';
 import './LoginPage.css';
 
 export function LoginPage({
   onLogin,
+  authenticationError = '',
 }: {
   onLogin: (user: AuthUser) => void;
+  authenticationError?: string;
 }) {
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState(authenticationError);
   const [loading, setLoading] = useState(false);
-  const [developmentEmail, setDevelopmentEmail] = useState('');
-  const [developmentPassword, setDevelopmentPassword] = useState('');
-  const [showDevelopmentPassword, setShowDevelopmentPassword] = useState(false);
-  const [developmentLoading, setDevelopmentLoading] = useState(false);
-  const microsoftConfigured = isMicrosoftAuthConfigured();
 
-  async function handleMicrosoftLogin() {
-    setErrorMessage('');
-    setLoading(true);
+  useEffect(() => {
+    if (authenticationError) setErrorMessage(authenticationError);
+  }, [authenticationError]);
 
-    try {
-      const idToken = await getMicrosoftIdentityToken();
-      const auth = await loginWithMicrosoft(idToken);
-      onLogin(auth.user);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Microsoft sign-in failed.',
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+  useEffect(() => {
+    const parameters = new URLSearchParams(window.location.search);
+    const handoff = parameters.get('microsoft_handoff');
+    const microsoftError = parameters.get('microsoft_error');
 
-  async function handleDevelopmentLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setErrorMessage('');
-    const email = developmentEmail.trim().toLowerCase();
-
-    if (!isAuEmail(email)) {
-      setErrorMessage('Enter a valid local @au.edu account email.');
+    if (microsoftError) {
+      const messages: Record<string, string> = {
+        account_inactive: 'This account is inactive.',
+        authentication_failed: 'Microsoft sign-in could not be verified.',
+      };
+      setErrorMessage(messages[microsoftError] || 'Microsoft sign-in failed.');
+      window.history.replaceState({}, '', '/login');
       return;
     }
 
-    setDevelopmentLoading(true);
-    try {
-      const auth = await developmentLogin(email, developmentPassword);
-      onLogin(auth.user);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Development login failed.',
-      );
-    } finally {
-      setDevelopmentLoading(false);
-    }
+    if (!handoff) return;
+    window.history.replaceState({}, '', '/login');
+    setLoading(true);
+    completeMicrosoftLogin(handoff)
+      .then((auth) => onLogin(auth.user))
+      .catch((error) => {
+        setErrorMessage(
+          error instanceof Error ? error.message : 'Microsoft sign-in failed.',
+        );
+      })
+      .finally(() => setLoading(false));
+  }, [onLogin]);
+
+  function handleMicrosoftLogin() {
+    setErrorMessage('');
+    setLoading(true);
+
+    startMicrosoftLogin();
   }
 
   return (
@@ -100,14 +89,13 @@ export function LoginPage({
               type="button"
               className="role-microsoft-button"
               onClick={handleMicrosoftLogin}
-              disabled={loading || !microsoftConfigured}
+              disabled={loading}
             >
               <span className="role-microsoft-mark" aria-hidden="true">
                 <span /><span /><span /><span />
               </span>
               {loading ? 'Signing in...' : 'Sign in with Microsoft'}
             </button>
-
           </div>
 
           <p className="role-microsoft-notice">
@@ -117,52 +105,6 @@ export function LoginPage({
           {errorMessage && (
             <p className="role-login-error" role="alert">{errorMessage}</p>
           )}
-
-          {import.meta.env.DEV && (
-            <section className="role-development-login" aria-label="Development login">
-              <span>Development Login</span>
-              <form onSubmit={handleDevelopmentLogin}>
-                <label className="role-field">
-                  <span>Email</span>
-                  <input
-                    type="email"
-                    value={developmentEmail}
-                    onChange={(event) => setDevelopmentEmail(event.target.value)}
-                    autoComplete="username"
-                    placeholder="local-user@au.edu"
-                    maxLength={254}
-                    required
-                  />
-                </label>
-                <label className="role-field">
-                  <span>Password</span>
-                  <span className="role-password-wrapper">
-                    <input
-                      type={showDevelopmentPassword ? 'text' : 'password'}
-                      value={developmentPassword}
-                      onChange={(event) => setDevelopmentPassword(event.target.value)}
-                      autoComplete="current-password"
-                      maxLength={MAX_PASSWORD_LENGTH}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="role-eye-button"
-                      onClick={() => setShowDevelopmentPassword((value) => !value)}
-                      aria-label={showDevelopmentPassword ? 'Hide password' : 'Show password'}
-                    >
-                      <img src={showDevelopmentPassword ? openEye : closeEye} alt="" />
-                    </button>
-                  </span>
-                </label>
-                <button type="submit" className="role-submit-button" disabled={developmentLoading}>
-                  {developmentLoading ? 'Logging in...' : 'Development Login'}
-                </button>
-              </form>
-              <small>Uses a real local PostgreSQL account, application JWT, and backend RBAC.</small>
-            </section>
-          )}
-
         </div>
       </section>
     </main>

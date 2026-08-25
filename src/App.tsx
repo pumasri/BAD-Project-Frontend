@@ -9,7 +9,11 @@ import {
 import type { AuthUser, Role, Item, StudentClaim } from './types';
 
 import { initialItems } from './data/mockData';
-import { clearAuth, getCurrentUser } from './services/authService';
+import {
+  clearAuth,
+  getCurrentUser,
+  logoutSession,
+} from './services/authService';
 
 import { HomePage } from './pages/HomePage';
 import { ItemDetailPage } from './pages/ItemDetailPage';
@@ -43,9 +47,9 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage';
 
 import './App.css';
 
-// ==========================================
+// ---
 // FRONTEND ROLE PROTECTION
-// ==========================================
+// ---
 
 const dashboardByRole: Record<Role, string> = {
   STUDENT: '/student-home',
@@ -86,14 +90,21 @@ function App() {
 
   const [user, setUser] = useState<AuthUser | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [authenticationError, setAuthenticationError] = useState('');
 
   useEffect(() => {
     async function restoreLogin() {
       try {
-        setUser(await getCurrentUser());
-      } catch {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
         clearAuth();
         setUser(null);
+        setAuthenticationError(
+          error instanceof Error
+            ? error.message
+            : 'Your session could not be restored.',
+        );
       } finally {
         setCheckingAuth(false);
       }
@@ -124,23 +135,25 @@ function App() {
   }
 
   function finishLogin(authenticatedUser: AuthUser) {
+    setAuthenticationError('');
     setUser(authenticatedUser);
     navigate(dashboardByRole[authenticatedUser.role]);
   }
 
-  // ==========================================
+  // ---
   // LOGOUT
-  // ==========================================
+  // ---
 
-  function logout() {
-    clearAuth();
+  async function logout() {
     setUser(null);
-    navigate('/');
+    setAuthenticationError('');
+    await logoutSession();
+    navigate('/login', { replace: true });
   }
 
-  // ==========================================
+  // ---
   // ADD FOUND ITEM
-  // ==========================================
+  // ---
 
   function handleAddItem(
     item: Omit<Item, 'id' | 'status'>
@@ -166,9 +179,9 @@ function App() {
     navigate('/staff-dashboard');
   }
 
-  // ==========================================
+  // ---
   // UPDATE ITEM
-  // ==========================================
+  // ---
 
   function updateItem(updatedItem: Item) {
     setItems((currentItems) =>
@@ -183,9 +196,9 @@ function App() {
   return (
     <Routes>
 
-      {/* ======================================
+      {/* ---
           PUBLIC
-      ====================================== */}
+      --- */}
 
       <Route
         path="/"
@@ -201,14 +214,17 @@ function App() {
         }
       />
 
-      {/* ======================================
+      {/* ---
           STUDENT
-      ====================================== */}
+      --- */}
 
       <Route
         path="/login"
         element={
-          <LoginPage onLogin={finishLogin} />
+          <LoginPage
+            onLogin={finishLogin}
+            authenticationError={authenticationError}
+          />
         }
       />
 
@@ -307,9 +323,9 @@ function App() {
         }
       />
 
-      {/* ======================================
+      {/* ---
           STAFF
-      ====================================== */}
+      --- */}
 
       <Route
         path="/staff-dashboard"
@@ -321,6 +337,7 @@ function App() {
           >
             <StaffDashboard
               items={items}
+              onLogout={logout}
             />
           </RequireAuth>
         }
@@ -411,9 +428,9 @@ function App() {
         }
       />
 
-      {/* ======================================
+      {/* ---
           ADMIN
-      ====================================== */}
+      --- */}
 
       <Route
         path="/admin-dashboard"
@@ -423,7 +440,9 @@ function App() {
             checkingAuth={checkingAuth}
             allowedRole="ADMIN"
           >
-            <AdminDashboard />
+            <AdminDashboard
+              onLogout={logout}
+            />
           </RequireAuth>
         }
       />
@@ -488,14 +507,14 @@ function App() {
             checkingAuth={checkingAuth}
             allowedRole="ADMIN"
           >
-            <AdminProfilePage onLogout={logout} />
+            <AdminProfilePage user={user!} onLogout={logout} />
           </RequireAuth>
         }
       />
 
-      {/* ======================================
+      {/* ---
           FORGOT PASSWORD
-      ====================================== */}
+      --- */}
 
       <Route
         path="/forgot-password"
@@ -506,9 +525,9 @@ function App() {
 
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-      {/* ======================================
+      {/* ---
           FALLBACK
-      ====================================== */}
+      --- */}
 
       <Route
         path="*"
