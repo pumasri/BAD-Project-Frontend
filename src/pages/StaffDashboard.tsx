@@ -9,7 +9,7 @@ export function StaffDashboard({
   items: Item[];
 }) {
   const navigate = useNavigate();
-  const recentItems = items.slice(0, 3);
+  const recentItems = items.filter((item) => item.reportType === 'FOUND').slice(0, 3);
 
   return (
     <main
@@ -72,6 +72,16 @@ export function StaffDashboard({
             <p>Review student ownership claims.</p>
           </button>
 
+          <button
+            type="button"
+            className="dashboard-action-card"
+            onClick={() => navigate('/staff/lost-reports')}
+          >
+            <span className="dashboard-icon">?</span>
+            <strong>Lost Reports</strong>
+            <p>Review items reported lost by students.</p>
+          </button>
+
         </div>
 
         <div className="staff-recent-section">
@@ -87,18 +97,18 @@ export function StaffDashboard({
               {recentItems.map((item) => (
                 <div key={item.id} className="staff-recent-item">
                   <div className="staff-recent-image">
-                    {item.image ? (
-                      <img src={item.image} alt={item.name} />
+                    {item.images && item.images.length > 0 ? (
+                      <img src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} alt={item.title} />
                     ) : (
-                      <span>{item.category}</span>
+                      <span>{item.category?.name}</span>
                     )}
                   </div>
 
                   <div className="staff-recent-info">
                     <span className="item-category">
-                      {item.category}
+                      {item.category?.name}
                     </span>
-                    <h3>{item.name}</h3>
+                    <h3>{item.title}</h3>
                     <p>📍 {item.location}</p>
                   </div>
 

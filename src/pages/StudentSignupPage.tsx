@@ -1,10 +1,43 @@
-import { useState, CSSProperties } from 'react';
+import { useState, CSSProperties, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { campusImage } from '../utils';
+import { campusImage, api, ApiError } from '../utils';
 
 export function StudentSignupPage() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match.");
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage('Creating account...');
+
+    try {
+      await api.post('/auth/register', { email, name, password });
+      setMessage('Account created successfully! Redirecting to login...');
+      setTimeout(() => {
+        navigate('/student-login');
+      }, 1500);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setMessage(error.message);
+      } else {
+        setMessage('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <main
@@ -34,16 +67,30 @@ export function StudentSignupPage() {
 
         <form
           className="login-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setMessage(
-              'Student signup will be connected to the backend later.',
-            );
-          }}
+          onSubmit={handleSubmit}
         >
           <label className="field">
+            <span>Full Name</span>
+            <input 
+              type="text" 
+              placeholder="e.g. John Doe" 
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required 
+              disabled={isLoading}
+            />
+          </label>
+
+          <label className="field">
             <span>AU Student Email</span>
-            <input type="email" placeholder="uID@au.edu" required />
+            <input 
+              type="email" 
+              placeholder="uID@au.edu" 
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required 
+              disabled={isLoading}
+            />
           </label>
 
           <label className="field">
@@ -51,7 +98,10 @@ export function StudentSignupPage() {
             <input
               type="password"
               placeholder="Create a password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
           </label>
 
@@ -60,12 +110,15 @@ export function StudentSignupPage() {
             <input
               type="password"
               placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
           </label>
 
-          <button type="submit" className="submit-button">
-            Create Student Account
+          <button type="submit" className="submit-button" disabled={isLoading}>
+            {isLoading ? 'Creating...' : 'Create Student Account'}
           </button>
 
           {message && <p className="form-status">{message}</p>}

@@ -1,12 +1,16 @@
-import { useState, FormEvent, CSSProperties } from 'react';
+import { useState, useEffect, FormEvent, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Item } from '../types';
-import { campusImage } from '../utils';
+import { api, ApiError, campusImage } from '../utils';
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 export function ReportFoundItemPage({
-  onSubmitItem,
+  onItemReported,
 }: {
-  onSubmitItem: (item: Omit<Item, 'id' | 'status'>) => void;
+  onItemReported: () => void;
 }) {
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -14,10 +18,19 @@ export function ReportFoundItemPage({
   const [location, setLocation] = useState('');
   const [date, setDate] = useState('');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    api.get('/categories')
+      .then(setCategories)
+      .catch(console.error);
+  }, []);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!name || !category || !location || !date || !description) {
@@ -25,14 +38,63 @@ export function ReportFoundItemPage({
       return;
     }
 
-    onSubmitItem({
-      name,
-      category,
-      location,
-      date,
-      description,
-      image,
-    });
+    setIsLoading(true);
+    setMessage('');
+
+    try {
+      const response = await api.post('/items', {
+        title: name,
+        categoryId: category,
+        occurredAt: new Date(date).toISOString(),
+        location,
+        description,
+        reportType: 'FOUND',
+        isPublic: true,
+      });
+
+      // Upload image if selected
+      if (selectedFile && response.id) {
+        setMessage('Uploading item image...');
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+
+        const token = localStorage.getItem('token');
+        const apiUrl = ((import.meta as any).env.VITE_API_URL || 'http://localhost:5050') + '/api';
+        
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const uploadRes = await fetch(`${apiUrl}/items/${response.id}/images`, {
+          method: 'POST',
+          headers,
+          body: formData
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error('Image upload failed.');
+        }
+      }
+
+      // Refetch items in global state
+      onItemReported();
+      
+      setMessage('Found item reported successfully!');
+      setTimeout(() => {
+        navigate('/staff-dashboard');
+      }, 1500);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setMessage(err.message);
+      } else if (err instanceof Error) {
+        setMessage(err.message);
+      } else {
+        setMessage('Failed to report item. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -49,6 +111,7 @@ export function ReportFoundItemPage({
           type="button"
           className="detail-back-button"
           onClick={() => navigate('/staff-dashboard')}
+          disabled={isLoading}
         >
           ← Back to Staff Dashboard
         </button>
@@ -69,6 +132,7 @@ export function ReportFoundItemPage({
                 onChange={(event) => setName(event.target.value)}
                 placeholder="e.g. Black Wallet"
                 required
+                disabled={isLoading}
               />
             </label>
 
@@ -78,15 +142,14 @@ export function ReportFoundItemPage({
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
                 required
+                disabled={isLoading || categories.length === 0}
               >
                 <option value="">Select category</option>
-                <option value="Wallet">Wallet</option>
-                <option value="Electronics">Electronics</option>
-                <option value="ID Card">ID Card</option>
-                <option value="Keys">Keys</option>
-                <option value="Bag">Bag</option>
-                <option value="Clothing">Clothing</option>
-                <option value="Other">Other</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
@@ -100,6 +163,7 @@ export function ReportFoundItemPage({
                 onChange={(event) => setLocation(event.target.value)}
                 placeholder="e.g. AU Library"
                 required
+                disabled={isLoading}
               />
             </label>
 
@@ -110,6 +174,7 @@ export function ReportFoundItemPage({
                 value={date}
                 onChange={(event) => setDate(event.target.value)}
                 required
+                disabled={isLoading}
               />
             </label>
           </div>
@@ -122,6 +187,7 @@ export function ReportFoundItemPage({
               placeholder="Describe the item, including useful identifying details..."
               rows={5}
               required
+              disabled={isLoading}
             />
           </label>
 
@@ -130,25 +196,27 @@ export function ReportFoundItemPage({
             <input
               type="file"
               accept="image/*"
+              disabled={isLoading}
               onChange={(event) => {
                 const file = event.target.files?.[0];
                 if (!file) {
                   return;
                 }
+                setSelectedFile(file);
                 const imageUrl = URL.createObjectURL(file);
-                setImage(imageUrl);
+                setImagePreview(imageUrl);
               }}
             />
           </label>
 
-          {image && (
+          {imagePreview && (
             <div className="image-preview">
-              <img src={image} alt="Preview of found item" />
+              <img src={imagePreview} alt="Preview of found item" />
             </div>
           )}
 
-          <button type="submit" className="submit-button">
-            Submit Found Item
+          <button type="submit" className="submit-button" disabled={isLoading}>
+            {isLoading ? 'Submitting...' : 'Submit Found Item'}
           </button>
 
           {message && <p className="form-status">{message}</p>}

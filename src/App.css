@@ -37,6 +37,7 @@ body {
   overflow: hidden;
 
   background: #fff2e3;
+  --page-background-image: url('/abacCampus.jpeg');
 }
 
 .page-shell::before {

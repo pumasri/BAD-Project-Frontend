@@ -9,14 +9,15 @@ export function HomePage({ items }: { items: Item[] }) {
 
   const filteredItems = useMemo(() => {
     const query = search.trim().toLowerCase();
+    const foundItems = items.filter((item) => item.reportType === 'FOUND');
 
     if (!query) {
-      return items;
+      return foundItems;
     }
 
-    return items.filter((item) =>
+    return foundItems.filter((item) =>
       [
-        item.name,
+        item.title,
         item.category,
         item.location,
         item.description,
@@ -96,19 +97,20 @@ export function HomePage({ items }: { items: Item[] }) {
               {filteredItems.map((item) => (
                 <article key={item.id} className="item-card">
                   <div className="item-card-image">
-                    {item.image ? (
-                      <img src={item.image} alt={item.name} />
-                    ) : null}
-                    <span>{item.category}</span>
+                    {item.images && item.images.length > 0 ? (
+                      <img src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} alt={item.title} />
+                    ) : (
+                      <span>{item.category?.name}</span>
+                    )}
                   </div>
 
                   <div className="item-card-content">
-                    <p className="item-category">{item.category}</p>
-                    <h3>{item.name}</h3>
+                    <p className="item-category">{item.category?.name}</p>
+                    <h3>{item.title}</h3>
 
                     <div className="item-info">
                       <span>📍 {item.location}</span>
-                      <span>{item.date}</span>
+                      <span>{new Date(item.occurredAt).toLocaleDateString()}</span>
                     </div>
 
                     <button

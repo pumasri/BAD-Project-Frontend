@@ -1,19 +1,63 @@
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { api, ApiError } from '../utils';
 import type { StudentClaim } from '../types';
 
-export function StudentClaimDetailsPage({ claims }: { claims: StudentClaim[] }) {
+export function StudentClaimDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   
-  const claim = claims.find((c) => c.id.toString() === id) || {
-    id: 'Unknown',
-    item: 'Unknown Item',
-    category: 'Unknown',
-    status: 'Unknown',
-    date: 'Unknown',
-    location: 'Unknown',
-    description: 'No description provided.',
-  };
+  const [claim, setClaim] = useState<StudentClaim | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function fetchClaim() {
+      try {
+        const data = await api.get(`/claims/${id}`);
+        setClaim(data);
+      } catch (err) {
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError('Failed to fetch claim details.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    if (id) {
+      fetchClaim();
+    }
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <main className="page-shell">
+        <section className="detail-card">
+          <p>Loading claim details...</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (error || !claim) {
+    return (
+      <main className="page-shell">
+        <section className="detail-card">
+          <p>Error: {error || 'Claim not found'}</p>
+          <button onClick={() => navigate('/student-claims')} className="submit-button">Back to Claims</button>
+        </section>
+      </main>
+    );
+  }
+
+  const claimIdDisplay = claim.id.substring(0, 8);
+  const titleDisplay = claim.foundReport?.title || 'Unknown Item';
+  const categoryDisplay = claim.foundReport?.category?.name || 'Unknown Category';
+  const locationDisplay = claim.foundReport?.location || 'Unknown Location';
+  const dateDisplay = new Date(claim.createdAt).toLocaleDateString();
 
   return (
     <main className="page-shell">
@@ -27,10 +71,10 @@ export function StudentClaimDetailsPage({ claims }: { claims: StudentClaim[] }) 
         </button>
 
         <div style={{ marginBottom: '32px' }}>
-          <p className="eyebrow">CLAIM #CLM-{claim.id.toString().padStart(3, '0')}</p>
+          <p className="eyebrow">CLAIM #{claimIdDisplay}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-            <h1 style={{ margin: 0, fontSize: '2.5rem', color: '#594a3a' }}>{claim.item}</h1>
-            <span className={`status-badge ${claim.status === 'Potential Match' ? 'status-matched' : claim.status === 'Resolved' ? 'status-resolved' : 'status-open'}`} style={{ fontSize: '1rem', padding: '8px 16px' }}>
+            <h1 style={{ margin: 0, fontSize: '2.5rem', color: '#594a3a' }}>{titleDisplay}</h1>
+            <span className={`status-badge ${claim.status === 'MORE_INFORMATION_REQUIRED' ? 'status-matched' : claim.status === 'APPROVED' ? 'status-resolved' : 'status-open'}`} style={{ fontSize: '1rem', padding: '8px 16px' }}>
               {claim.status}
             </span>
           </div>
@@ -39,62 +83,57 @@ export function StudentClaimDetailsPage({ claims }: { claims: StudentClaim[] }) 
         <div className="detail-layout">
           <div>
             <div style={{ background: 'rgba(255,255,255,0.6)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 16px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Your Lost Item</h3>
+              <h3 style={{ margin: '0 0 16px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Your Claim</h3>
               
               <div style={{ marginBottom: '16px' }}>
-                <strong style={{ display: 'block', color: '#594a3a', fontSize: '1.2rem', marginBottom: '4px' }}>{claim.item}</strong>
-                <span style={{ color: '#918477' }}>{claim.category}</span>
+                <strong style={{ display: 'block', color: '#594a3a', fontSize: '1.2rem', marginBottom: '4px' }}>{titleDisplay}</strong>
+                <span style={{ color: '#918477' }}>{categoryDisplay}</span>
               </div>
               
-              <p style={{ margin: '0 0 8px', color: '#594a3a' }}><strong>Lost:</strong> {claim.date}</p>
-              <p style={{ margin: '0 0 16px', color: '#594a3a' }}><strong>Location:</strong> {claim.location || 'AU Library'}</p>
+              <p style={{ margin: '0 0 8px', color: '#594a3a' }}><strong>Submitted:</strong> {dateDisplay}</p>
+              <p style={{ margin: '0 0 16px', color: '#594a3a' }}><strong>Location:</strong> {locationDisplay}</p>
               
-              <h4 style={{ margin: '0 0 8px', color: '#594a3a' }}>Description:</h4>
-              <p style={{ margin: 0, color: '#918477', lineHeight: '1.6' }}>{claim.description || 'Black leather wallet with AU student ID inside.'}</p>
+              <h4 style={{ margin: '0 0 8px', color: '#594a3a' }}>Identifying Details you provided:</h4>
+              <p style={{ margin: 0, color: '#918777', lineHeight: '1.6', marginBottom: claim.evidence && claim.evidence.length > 0 ? '24px' : '0' }}>{claim.identifyingDetails}</p>
+
+              {claim.evidence && claim.evidence.length > 0 && (
+                <div>
+                  <h4 style={{ margin: '0 0 12px', color: '#a35d3f', fontSize: '0.85rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Evidence Attachments</h4>
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    {claim.evidence.map((ev) => (
+                      ev.evidenceType === 'IMAGE' && ev.objectKey && (
+                        <div key={ev.id} style={{ maxWidth: '300px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)' }}>
+                          <img 
+                            src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${ev.objectKey}`} 
+                            alt="Proof of ownership" 
+                            style={{ width: '100%', height: 'auto', display: 'block' }}
+                          />
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div style={{ background: 'rgba(255,255,255,0.6)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
               <h3 style={{ margin: '0 0 16px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Status</h3>
               <p style={{ margin: 0, color: '#594a3a', lineHeight: '1.6' }}>
-                {claim.status === 'Potential Match' 
-                  ? 'We have found a potential match! Please review the verification questions.' 
-                  : claim.status === 'Resolved'
-                  ? 'This claim has been resolved and the item was returned.'
-                  : 'Staff is currently reviewing your ownership claim. We will notify you if a match is found.'}
+                {claim.status === 'MORE_INFORMATION_REQUIRED' 
+                  ? 'We need more information to verify your claim. Please check the notes.' 
+                  : claim.status === 'APPROVED'
+                  ? 'This claim has been approved! You can collect your item.'
+                  : claim.status === 'REJECTED'
+                  ? 'This claim was rejected.'
+                  : 'Staff is currently reviewing your ownership claim. We will notify you if a match is confirmed.'}
               </p>
+              {claim.reviewNote && (
+                <div style={{ marginTop: '16px', padding: '16px', background: '#fff', borderRadius: '8px' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: '0.85rem', color: '#a35d3f', fontWeight: 'bold' }}>Staff Note:</p>
+                  <p style={{ margin: 0, color: '#594a3a' }}>{claim.reviewNote}</p>
+                </div>
+              )}
             </div>
-          </div>
-
-          <div>
-            {claim.status === 'Potential Match' && (
-              <div style={{ background: 'rgba(87, 120, 157, 0.05)', padding: '32px', borderRadius: '24px', border: '1px solid rgba(87, 120, 157, 0.15)', marginBottom: '24px' }}>
-                <h3 style={{ margin: '0 0 24px', color: '#52739a', fontSize: '1rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Potential Match Found</h3>
-                
-                <div style={{ display: 'flex', gap: '24px', marginBottom: '24px' }}>
-                  <div style={{ flex: 1 }}>
-                    <strong style={{ display: 'block', color: '#594a3a', fontSize: '1.3rem', marginBottom: '8px' }}>{claim.item}</strong>
-                    <p style={{ margin: '0 0 4px', color: '#918477' }}>Found at AU Library</p>
-                    <p style={{ margin: 0, color: '#918477' }}>August 22, 2026</p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ display: 'block', color: '#918477', fontSize: '0.8rem', marginBottom: '4px', textTransform: 'uppercase' }}>Match Confidence</span>
-                    <strong style={{ fontSize: '2rem', color: '#52739a' }}>87%</strong>
-                  </div>
-                </div>
-
-                <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '24px' }}>
-                  <h4 style={{ margin: '0 0 16px', color: '#594a3a' }}>Verification Required</h4>
-                  <div style={{ background: 'rgba(255,255,255,0.8)', padding: '16px', borderRadius: '12px', marginBottom: '16px' }}>
-                    <p style={{ margin: '0 0 8px', color: '#918477', fontSize: '0.9rem' }}>Question:</p>
-                    <p style={{ margin: 0, color: '#594a3a', fontWeight: 'bold' }}>What was inside the wallet?</p>
-                  </div>
-                  <div className="field">
-                    <textarea rows={3} placeholder="Your answer..." defaultValue="Student ID + bank card"></textarea>
-                  </div>
-                  <button className="submit-button" style={{ marginTop: '16px', background: '#52739a' }}>Submit Verification</button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </section>

@@ -1,6 +1,6 @@
-import { Item, LoginPageConfig } from '../types';
+import { LoginPageConfig } from '../types';
 
-export const initialItems: Item[] = [
+export const initialItems: any[] = [
   {
     id: 1,
     name: 'Black Wallet',

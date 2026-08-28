@@ -1,15 +1,37 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../utils';
 
-const mockLogs = [
-  { id: 1, time: 'Aug 24 10:32', user: 'Staff Member', action: 'APPROVE_CLAIM', target: 'CLM-001', details: 'Claim approved' },
-  { id: 2, time: 'Aug 24 10:20', user: 'Khaimuk Pumasri', action: 'CREATE_CLAIM', target: 'CLM-002', details: 'New claim submitted' },
-  { id: 3, time: 'Aug 23 15:44', user: 'Staff Member', action: 'CREATE_ITEM', target: 'ITM-035', details: 'Found item reported' },
-  { id: 4, time: 'Aug 23 14:10', user: 'Admin User', action: 'UPDATE_USER_ROLE', target: 'USR-102', details: 'Role changed to STAFF' },
-  { id: 5, time: 'Aug 23 11:05', user: 'Staff Member', action: 'REQUEST_MORE_INFORMATION', target: 'CLM-003', details: 'Requested missing evidence' },
-];
+interface AuditLog {
+  id: string;
+  createdAt: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  details?: any;
+  actor?: {
+    fullName: string;
+    universityEmail: string;
+  } | null;
+}
 
 export function AdminAuditLogsPage() {
   const navigate = useNavigate();
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/admin/audit-logs')
+      .then(data => {
+        setLogs(data);
+      })
+      .catch(err => {
+        console.error('Error fetching audit logs:', err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
   return (
     <main className="page-shell">
@@ -42,9 +64,6 @@ export function AdminAuditLogsPage() {
             <option value="UPDATE_USER_ROLE">UPDATE_USER_ROLE</option>
             <option value="DEACTIVATE_USER">DEACTIVATE_USER</option>
           </select>
-          <select style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', background: 'white' }}>
-            <option value="ALL">Filter User</option>
-          </select>
         </div>
 
         <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)' }}>
@@ -59,15 +78,29 @@ export function AdminAuditLogsPage() {
               </tr>
             </thead>
             <tbody>
-              {mockLogs.map(log => (
+              {isLoading ? (
+                <tr><td colSpan={5} style={{ padding: '24px', textAlign: 'center' }}>Loading audit logs...</td></tr>
+              ) : logs.length === 0 ? (
+                <tr><td colSpan={5} style={{ padding: '24px', textAlign: 'center' }}>No audit logs recorded yet.</td></tr>
+              ) : logs.map(log => (
                 <tr key={log.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                  <td style={{ padding: '16px', color: '#918477', fontSize: '0.9rem' }}>{log.time}</td>
-                  <td style={{ padding: '16px' }}><strong>{log.user}</strong></td>
+                  <td style={{ padding: '16px', color: '#918477', fontSize: '0.9rem' }}>
+                    {new Date(log.createdAt).toLocaleString()}
+                  </td>
+                  <td style={{ padding: '16px' }}>
+                    <strong>{log.actor?.fullName || 'System / OIDC'}</strong>
+                    <br />
+                    <small style={{ color: '#918477' }}>{log.actor?.universityEmail || ''}</small>
+                  </td>
                   <td style={{ padding: '16px' }}>
                     <span style={{ padding: '4px 8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>{log.action}</span>
                   </td>
-                  <td style={{ padding: '16px', color: '#a35d3f', fontWeight: 'bold' }}>{log.target}</td>
-                  <td style={{ padding: '16px', color: '#594a3a' }}>{log.details}</td>
+                  <td style={{ padding: '16px', color: '#a35d3f', fontWeight: 'bold' }}>
+                    {log.entityType} ({log.entityId.slice(0, 8)})
+                  </td>
+                  <td style={{ padding: '16px', color: '#594a3a' }}>
+                    {log.details ? JSON.stringify(log.details) : 'N/A'}
+                  </td>
                 </tr>
               ))}
             </tbody>

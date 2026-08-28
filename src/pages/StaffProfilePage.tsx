@@ -1,7 +1,20 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../utils';
 
 export function StaffProfilePage() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    api.get('/auth/me')
+      .then(res => {
+        if (res?.user) {
+          setUser(res.user);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <main className="page-shell">
@@ -23,11 +36,11 @@ export function StaffProfilePage() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', padding: '32px', background: 'rgba(255,255,255,0.7)', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '32px' }}>
           <div style={{ width: '80px', height: '80px', background: '#594a3a', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', fontSize: '2rem', fontWeight: 'bold' }}>
-            S
+            {user?.name ? user.name[0].toUpperCase() : 'S'}
           </div>
           <div>
-            <h2 style={{ margin: '0 0 4px', color: '#594a3a', fontSize: '1.8rem' }}>Staff Member</h2>
-            <p style={{ margin: 0, color: '#918477', fontSize: '1.1rem' }}>staff@au.edu</p>
+            <h2 style={{ margin: '0 0 4px', color: '#594a3a', fontSize: '1.8rem' }}>{user?.name || 'Loading...'}</h2>
+            <p style={{ margin: 0, color: '#918477', fontSize: '1.1rem' }}>{user?.email || ''}</p>
           </div>
         </div>
 
@@ -37,15 +50,15 @@ export function StaffProfilePage() {
             <div style={{ background: 'rgba(255,255,255,0.6)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
               <div style={{ marginBottom: '16px' }}>
                 <span style={{ display: 'block', color: '#918477', fontSize: '0.85rem', marginBottom: '4px' }}>Name</span>
-                <strong style={{ color: '#594a3a', fontSize: '1.1rem' }}>Staff Member</strong>
+                <strong style={{ color: '#594a3a', fontSize: '1.1rem' }}>{user?.name || 'Loading...'}</strong>
               </div>
               <div style={{ marginBottom: '16px' }}>
                 <span style={{ display: 'block', color: '#918477', fontSize: '0.85rem', marginBottom: '4px' }}>Email</span>
-                <strong style={{ color: '#594a3a', fontSize: '1.1rem' }}>staff@au.edu</strong>
+                <strong style={{ color: '#594a3a', fontSize: '1.1rem' }}>{user?.email || ''}</strong>
               </div>
               <div>
                 <span style={{ display: 'block', color: '#918477', fontSize: '0.85rem', marginBottom: '4px' }}>Role</span>
-                <span className="status-badge" style={{ background: '#594a3a', color: 'white' }}>Staff</span>
+                <span className="status-badge" style={{ background: '#594a3a', color: 'white' }}>{user?.role || 'STAFF'}</span>
               </div>
             </div>
           </div>

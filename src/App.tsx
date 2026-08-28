@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import {
   Routes,
   Route,
@@ -9,9 +9,9 @@ import {
 import type { Role, Item, StudentClaim } from './types';
 
 import {
-  initialItems,
   loginPages,
 } from './data/mockData';
+import { api } from './utils';
 
 import { HomePage } from './pages/HomePage';
 import { ItemDetailPage } from './pages/ItemDetailPage';
@@ -32,6 +32,7 @@ import { StaffProfilePage } from './pages/StaffProfilePage';
 import { StaffManageItemsPage } from './pages/StaffManageItemsPage';
 import { StaffItemDetailPage } from './pages/StaffItemDetailPage';
 import { ReportFoundItemPage } from './pages/ReportFoundItemPage';
+import { StaffLostReportsPage } from './pages/StaffLostReportsPage';
 
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminUsersPage } from './pages/AdminUsersPage';
@@ -41,6 +42,7 @@ import { AdminApiIntegrationsPage } from './pages/AdminApiIntegrationsPage';
 import { AdminProfilePage } from './pages/AdminProfilePage';
 
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { AIChatbot } from './components/AIChatbot';
 
 import './App.css';
 
@@ -74,38 +76,69 @@ function RequireAuth({
 function App() {
   const navigate = useNavigate();
 
-  const [items, setItems] = useState<Item[]>(initialItems);
+  const [items, setItems] = useState<Item[]>([]);
+  const [role, setRole] = useState<Role>(() => {
+    const stored = localStorage.getItem('userRole');
+    const resolvedRole = stored ? (stored.toLowerCase() as Role) : null;
+    console.log('[DEBUG] App Init - Stored UserRole:', stored, 'Resolved:', resolvedRole);
+    return resolvedRole;
+  });
+  const [studentClaims, setStudentClaims] = useState<StudentClaim[]>([]);
 
-  // Frontend-only mock authentication
-  const [role, setRole] = useState<Role>(null);
-
-  const [studentClaims, setStudentClaims] = useState<StudentClaim[]>([
-    {
-      id: 1,
-      item: 'Black Wallet',
-      category: 'Wallet',
-      status: 'Under Review',
-      date: 'August 21, 2026',
-    },
-    {
-      id: 2,
-      item: 'AirPods Case',
-      category: 'Electronics',
-      status: 'Potential Match',
-      date: 'August 19, 2026',
-    },
-  ]);
-
-  function handleAddClaim(claim: StudentClaim) {
-    setStudentClaims([claim, ...studentClaims]);
+  async function handleUpdateItem(item: Item) {
+    try {
+      await api.patch(`/items/${item.id}`, {
+        title: item.title,
+        description: item.description,
+        location: item.location,
+        status: item.status
+      });
+      fetchItems();
+    } catch (error) {
+      console.error('Error updating item:', error);
+    }
   }
+
+  function fetchItems() {
+    api.get('/items').then(setItems).catch(console.error);
+  }
+
+  useEffect(() => {
+    // Fetch immediately
+    fetchItems();
+    
+    const fetchClaims = () => {
+      if (role === 'student') {
+        api.get('/claims/my').then(setStudentClaims).catch(console.error);
+      } else if (role === 'staff') {
+        api.get('/claims').then(setStudentClaims).catch(console.error);
+      }
+    };
+    
+    fetchClaims();
+
+    // Poll items and claims every 5 seconds for real-time updates
+    const interval = setInterval(() => {
+      fetchItems();
+      fetchClaims();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [role]);
+
+  
 
   // ==========================================
   // LOGIN
   // ==========================================
 
-  function loginAs(newRole: Role) {
+  function loginAs(newRole: Role, redirectPath?: string) {
     setRole(newRole);
+
+    if (redirectPath) {
+      navigate(redirectPath);
+      return;
+    }
 
     if (newRole === 'student') {
       navigate('/student-home');
@@ -128,6 +161,8 @@ function App() {
   // ==========================================
 
   function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
     setRole(null);
     navigate('/');
   }
@@ -136,48 +171,19 @@ function App() {
   // ADD FOUND ITEM
   // ==========================================
 
-  function handleAddItem(
-    item: Omit<Item, 'id' | 'status'>
-  ) {
-    const newItem: Item = {
-      ...item,
-      id:
-        items.length > 0
-          ? Math.max(
-              ...items.map(
-                (currentItem) => currentItem.id
-              )
-            ) + 1
-          : 1,
-      status: 'OPEN',
-    };
 
-    setItems((currentItems) => [
-      newItem,
-      ...currentItems,
-    ]);
-
-    navigate('/staff-dashboard');
-  }
 
   // ==========================================
   // UPDATE ITEM
   // ==========================================
 
-  function updateItem(updatedItem: Item) {
-    setItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === updatedItem.id
-          ? updatedItem
-          : item
-      )
-    );
-  }
+
 
   return (
-    <Routes>
+    <>
+      <Routes>
 
-      {/* ======================================
+        {/* ======================================
           PUBLIC
       ====================================== */}
 
@@ -204,7 +210,7 @@ function App() {
         element={
           <LoginPage
             {...loginPages['/student-login']}
-            onLogin={() => loginAs('student')}
+            onLogin={(newRole, redirect) => loginAs(newRole, redirect)}
           />
         }
       />
@@ -213,6 +219,19 @@ function App() {
         path="/student-signup"
         element={
           <StudentSignupPage />
+        }
+      />
+
+      <Route
+        path="/student-report-lost"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="student"
+            loginPath="/student-login"
+          >
+            <StudentReportLostItemPage onItemReported={fetchItems} />
+          </RequireAuth>
         }
       />
 
@@ -227,6 +246,7 @@ function App() {
             <StudentHome
               onLogout={logout}
               claims={studentClaims}
+              items={items}
             />
           </RequireAuth>
         }
@@ -245,18 +265,6 @@ function App() {
         }
       />
 
-      <Route
-        path="/student-report-lost"
-        element={
-          <RequireAuth
-            currentRole={role}
-            allowedRole="student"
-            loginPath="/student-login"
-          >
-            <StudentReportLostItemPage onSubmitClaim={handleAddClaim} />
-          </RequireAuth>
-        }
-      />
 
       {/* Student Claims */}
       <Route
@@ -281,7 +289,7 @@ function App() {
             allowedRole="student"
             loginPath="/student-login"
           >
-            <StudentClaimDetailsPage claims={studentClaims} />
+            <StudentClaimDetailsPage />
           </RequireAuth>
         }
       />
@@ -309,7 +317,7 @@ function App() {
         element={
           <LoginPage
             {...loginPages['/staff-login']}
-            onLogin={() => loginAs('staff')}
+            onLogin={(newRole, redirect) => loginAs(newRole, redirect)}
           />
         }
       />
@@ -354,7 +362,7 @@ function App() {
           >
             <StaffItemDetailPage
               items={items}
-              onUpdateItem={updateItem}
+              onUpdateItem={handleUpdateItem}
             />
           </RequireAuth>
         }
@@ -369,7 +377,7 @@ function App() {
             loginPath="/staff-login"
           >
             <ReportFoundItemPage
-              onSubmitItem={handleAddItem}
+              onItemReported={fetchItems}
             />
           </RequireAuth>
         }
@@ -396,7 +404,20 @@ function App() {
             allowedRole="staff"
             loginPath="/staff-login"
           >
-            <StaffClaimDetailsPage claims={studentClaims} />
+            <StaffClaimDetailsPage />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/staff/lost-reports"
+        element={
+          <RequireAuth
+            currentRole={role}
+            allowedRole="staff"
+            loginPath="/staff-login"
+          >
+            <StaffLostReportsPage items={items} onUpdate={fetchItems} />
           </RequireAuth>
         }
       />
@@ -531,7 +552,10 @@ function App() {
         }
       />
 
-    </Routes>
+      </Routes>
+      
+      {role === 'student' && <AIChatbot />}
+    </>
   );
 }
 
