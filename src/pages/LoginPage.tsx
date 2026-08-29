@@ -1,13 +1,21 @@
-import { useState, useEffect, FormEvent, CSSProperties } from 'react';
+import { useState, useEffect, useRef, FormEvent, CSSProperties } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Role } from '../types';
 import { api, ApiError, campusImage } from '../utils';
 
 export function LoginPage({
   role,
+  title,
+  description,
+  emailLabel,
+  emailPlaceholder,
   onLogin,
 }: {
   role: Role;
+  title?: string;
+  description?: string;
+  emailLabel?: string;
+  emailPlaceholder?: string;
   onLogin: (role: Role, redirectPath?: string) => void;
 }) {
   const navigate = useNavigate();
@@ -18,29 +26,30 @@ export function LoginPage({
   const [message, setMessage] = useState('');
 
   const isStudent = role === 'student';
-  const title = isStudent ? 'Student Portal' : 'Staff Portal';
-  const description = isStudent
+  const displayTitle = title || (isStudent ? 'Student Portal' : 'Staff Portal');
+  const displayDescription = description || (isStudent
     ? 'Log in to report lost items or submit ownership claims.'
-    : 'Log in to manage reported items and verify ownership claims.';
+    : 'Log in to manage reported items and verify ownership claims.');
 
-  const emailLabel = isStudent ? 'Student Email' : 'Staff Email';
-  const emailPlaceholder = isStudent
+  const displayEmailLabel = emailLabel || (isStudent ? 'Student Email' : 'Staff Email');
+  const displayEmailPlaceholder = emailPlaceholder || (isStudent
     ? 'e.g. u1234567@au.edu'
-    : 'e.g. staffname@au.edu';
+    : 'e.g. staffname@au.edu');
+
+  const handoffAttempted = useRef(false);
 
   useEffect(() => {
     const code = searchParams.get('microsoft_handoff');
     const error = searchParams.get('microsoft_error');
 
-    if (code) {
+    if (code && !handoffAttempted.current) {
+      handoffAttempted.current = true;
       setIsLoading(true);
       setMessage('Completing Microsoft sign-in...');
       api.post('/auth/microsoft/exchange', { code })
         .then((response) => {
           localStorage.setItem('token', response.token);
-          const userRole = response.user.role;
-          localStorage.setItem('userRole', userRole);
-          const roleStr = userRole.toLowerCase() as Role;
+          const roleStr = response.user.role.toLowerCase() as Role;
           onLogin(roleStr, response.redirect || undefined);
         })
         .catch((err) => {
@@ -74,11 +83,7 @@ export function LoginPage({
       localStorage.setItem('token', response.token);
       
       const meResponse = await api.get('/auth/me');
-      const userRole = meResponse.user.role;
-      
-      localStorage.setItem('userRole', userRole);
-      
-      const roleStr = userRole.toLowerCase() as Role;
+      const roleStr = meResponse.user.role.toLowerCase() as Role;
       const redirect = searchParams.get('redirect');
       onLogin(roleStr, redirect || undefined);
     } catch (error) {
@@ -111,19 +116,19 @@ export function LoginPage({
         </button>
 
         <div className="card-heading">
-          <p className="eyebrow">CAMPUS LOST &amp; FOUND</p>
-          <h1>{title}</h1>
-          <p>{description}</p>
+          <p className="eyebrow">{displayTitle.toUpperCase()}</p>
+          <h1>{displayTitle}</h1>
+          <p>{displayDescription}</p>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
           <label className="field">
-            <span>{emailLabel}</span>
+            <span>{displayEmailLabel}</span>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={emailPlaceholder}
+              placeholder={displayEmailPlaceholder}
               required
               disabled={isLoading}
             />

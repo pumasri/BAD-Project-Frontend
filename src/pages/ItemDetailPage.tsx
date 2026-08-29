@@ -1,9 +1,9 @@
 import { useState, CSSProperties, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Item } from '../types';
+import { Item, Role } from '../types';
 import { campusImage, api, ApiError } from '../utils';
 
-export function ItemDetailPage({ items }: { items: Item[] }) {
+export function ItemDetailPage({ items, currentRole }: { items: Item[], currentRole: Role | null }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [showLoginMessage, setShowLoginMessage] = useState(false);
@@ -16,17 +16,26 @@ export function ItemDetailPage({ items }: { items: Item[] }) {
 
   const item = items.find((i) => i.id.toString() === id);
 
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('userRole');
-  const isLoggedIn = !!token;
-  const isStudent = userRole === 'STUDENT';
+  const isLoggedIn = !!currentRole;
+  const isStudent = currentRole === 'student';
+
+  const handleBack = () => {
+    if (!isLoggedIn) {
+      navigate('/');
+      return;
+    }
+    if (currentRole === 'student') return navigate('/student-home');
+    if (currentRole === 'staff') return navigate('/staff-dashboard');
+    if (currentRole === 'admin') return navigate('/admin-dashboard');
+    navigate('/');
+  };
 
   if (!item) {
     return (
       <main className="page-shell" style={{ '--page-background-image': `url(${campusImage})` } as CSSProperties}>
         <section className="detail-card">
           <h1>Item not found</h1>
-          <button type="button" className="detail-back-button" onClick={() => navigate('/')}>← Back to Lost &amp; Found</button>
+          <button type="button" className="detail-back-button" onClick={handleBack}>← Back to Lost &amp; Found</button>
         </section>
       </main>
     );
@@ -102,7 +111,7 @@ export function ItemDetailPage({ items }: { items: Item[] }) {
         <button
           type="button"
           className="detail-back-button"
-          onClick={() => navigate(isLoggedIn ? '/student-home' : '/')}
+          onClick={handleBack}
         >
           ← Back to Lost &amp; Found
         </button>

@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { MessageSquare, X, Send, Loader2 } from 'lucide-react';
-
-const genAI = new GoogleGenerativeAI((import.meta as any).env.VITE_GEMINI_API_KEY || '');
+import { api } from '../utils';
 
 interface Message {
   text: string;
@@ -43,34 +41,18 @@ export function AIChatbot() {
     setIsLoading(true);
 
     try {
-      if (!(import.meta as any).env.VITE_GEMINI_API_KEY) {
-        throw new Error('Gemini API key is missing.');
-      }
+      const response = await api.post('/chat', { message: userText });
       
-      const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
-      
-      const promptContext = `
-        You are a helpful and friendly AI assistant for a university "Lost and Found" web application.
-        The user is a student. 
-        Keep your answers concise and relevant to finding lost items, reporting lost items, or checking the status of claims.
-        Do not provide complex code or unrelated information.
-        User's message: ${userText}
-      `;
-
-      const result = await model.generateContent(promptContext);
-      const response = await result.response;
-      const text = response.text();
-
       setMessages((prev) => [
         ...prev,
-        { text, isUser: false, id: (Date.now() + 1).toString() },
+        { text: response.text, isUser: false, id: (Date.now() + 1).toString() },
       ]);
     } catch (error) {
       console.error('Error generating AI response:', error);
       setMessages((prev) => [
         ...prev,
         {
-          text: 'Sorry, I am having trouble connecting right now. Please try again later or check if the API key is set.',
+          text: 'Sorry, I am having trouble connecting right now. Please try again later or check if the API key is set on the server.',
           isUser: false,
           id: (Date.now() + 1).toString(),
         },

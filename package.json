@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^1.35.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

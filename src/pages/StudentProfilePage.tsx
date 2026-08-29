@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils';
 
-export function StudentProfilePage() {
+export function StudentProfilePage({ onLogout }: { onLogout: () => void }) {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
 
@@ -73,10 +73,7 @@ export function StudentProfilePage() {
               <button className="secondary-button" style={{ width: '100%', padding: '14px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', color: '#594a3a', fontWeight: 'bold', cursor: 'pointer' }}>
                 Change Password
               </button>
-              <button className="secondary-button" style={{ width: '100%', padding: '14px', background: 'rgba(163,93,63,0.1)', border: 'none', borderRadius: '12px', color: '#a35d3f', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => {
-                // mock logout
-                navigate('/');
-              }}>
+              <button className="secondary-button" style={{ width: '100%', padding: '14px', background: 'rgba(163,93,63,0.1)', border: 'none', borderRadius: '12px', color: '#a35d3f', fontWeight: 'bold', cursor: 'pointer' }} onClick={onLogout}>
                 Log Out
               </button>
             </div>

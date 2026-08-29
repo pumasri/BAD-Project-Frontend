@@ -4,14 +4,21 @@ import { campusImage, api, ApiError } from '../utils';
 
 export function StudentSignupPage() {
   const navigate = useNavigate();
+  const [step, setStep] = useState<'REGISTER' | 'VERIFY'>('REGISTER');
+  
+  // Registration form state
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // Verification form state
+  const [otpCode, setOtpCode] = useState('');
+  
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleRegister(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     
     if (password !== confirmPassword) {
@@ -24,7 +31,28 @@ export function StudentSignupPage() {
 
     try {
       await api.post('/auth/register', { email, name, password });
-      setMessage('Account created successfully! Redirecting to login...');
+      setMessage('Account created! Please check your email for the verification code.');
+      setStep('VERIFY');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setMessage(error.message);
+      } else {
+        setMessage('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleVerify(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    
+    setIsLoading(true);
+    setMessage('Verifying code...');
+
+    try {
+      await api.post('/auth/verify-otp', { email, code: otpCode });
+      setMessage('Email verified successfully! Redirecting to login...');
       setTimeout(() => {
         navigate('/student-login');
       }, 1500);
@@ -32,7 +60,7 @@ export function StudentSignupPage() {
       if (error instanceof ApiError) {
         setMessage(error.message);
       } else {
-        setMessage('An unexpected error occurred. Please try again.');
+        setMessage('Invalid or expired verification code.');
       }
     } finally {
       setIsLoading(false);
@@ -58,71 +86,89 @@ export function StudentSignupPage() {
         </button>
 
         <div className="card-heading">
-          <p className="eyebrow">STUDENT ACCOUNT</p>
-          <h1>Create Account</h1>
+          <h1>{step === 'REGISTER' ? 'Create Account' : 'Verify Email'}</h1>
           <p>
-            Create your AU student account to submit ownership claims.
+            {step === 'REGISTER' 
+              ? 'Join the campus network to claim and report items.' 
+              : `We sent a 6-digit code to ${email}. Check your backend terminal output in development mode to see the code.`}
           </p>
         </div>
 
-        <form
-          className="login-form"
-          onSubmit={handleSubmit}
-        >
-          <label className="field">
-            <span>Full Name</span>
-            <input 
-              type="text" 
-              placeholder="e.g. John Doe" 
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required 
-              disabled={isLoading}
-            />
-          </label>
+        {step === 'REGISTER' && (
+          <form onSubmit={handleRegister}>
+            <label className="field">
+              <span>Full Name</span>
+              <input
+                type="text"
+                placeholder="John Doe"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>University Email</span>
+              <input
+                type="email"
+                placeholder="u1234567@au.edu"
+                required
+                pattern="^u[0-9]{7}@au\.edu$"
+                title="Must be an AU email address like u1234567@au.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>Password</span>
+              <input
+                type="password"
+                required
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>Confirm Password</span>
+              <input
+                type="password"
+                required
+                minLength={8}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </label>
+            <button type="submit" className="login-button" disabled={isLoading}>
+              {isLoading ? 'Creating...' : 'Sign Up'}
+            </button>
+          </form>
+        )}
 
-          <label className="field">
-            <span>AU Student Email</span>
-            <input 
-              type="email" 
-              placeholder="uID@au.edu" 
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required 
-              disabled={isLoading}
-            />
-          </label>
+        {step === 'VERIFY' && (
+          <form onSubmit={handleVerify}>
+            <label className="field">
+              <span>6-Digit Verification Code</span>
+              <input
+                type="text"
+                placeholder="123456"
+                required
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value)}
+                style={{ fontSize: '1.25rem', letterSpacing: '4px', textAlign: 'center' }}
+              />
+            </label>
+            <button type="submit" className="login-button" disabled={isLoading}>
+              {isLoading ? 'Verifying...' : 'Verify Email'}
+            </button>
+          </form>
+        )}
 
-          <label className="field">
-            <span>Password</span>
-            <input
-              type="password"
-              placeholder="Create a password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </label>
-
-          <label className="field">
-            <span>Confirm Password</span>
-            <input
-              type="password"
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </label>
-
-          <button type="submit" className="submit-button" disabled={isLoading}>
-            {isLoading ? 'Creating...' : 'Create Student Account'}
-          </button>
-
-          {message && <p className="form-status">{message}</p>}
-        </form>
+        {message && (
+          <div className="login-error" style={{ color: message.includes('success') ? '#2e7d32' : undefined }}>
+            {message}
+          </div>
+        )}
       </section>
     </main>
   );

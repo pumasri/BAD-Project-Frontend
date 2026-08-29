@@ -6,7 +6,17 @@ import {
   Navigate,
 } from 'react-router-dom';
 
+import { jwtDecode } from 'jwt-decode';
+
 import type { Role, Item, StudentClaim } from './types';
+
+interface DecodedToken {
+  sub: string;
+  role: string;
+  ver: number;
+  exp: number;
+  iat: number;
+}
 
 import {
   loginPages,
@@ -61,27 +71,60 @@ function RequireAuth({
   loginPath: string;
   children: ReactNode;
 }) {
-  if (currentRole !== allowedRole) {
-    return (
-      <Navigate
-        to={loginPath}
-        replace
-      />
-    );
+  if (currentRole === allowedRole) {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
+  // If they are logged in but have the wrong role, redirect them to their actual dashboard
+  if (currentRole) {
+    if (currentRole === 'student') return <Navigate to="/student-home" replace />;
+    if (currentRole === 'staff') return <Navigate to="/staff-dashboard" replace />;
+    if (currentRole === 'admin') return <Navigate to="/admin-dashboard" replace />;
+  }
+
+  // Not logged in, go to the requested login page
+  return <Navigate to={loginPath} replace />;
+}
+
+function RequireGuest({
+  currentRole,
+  children,
+}: {
+  currentRole: Role | null;
+  children: ReactNode;
+}) {
+  if (!currentRole) {
+    return <>{children}</>;
+  }
+
+  // Already logged in, redirect to correct dashboard
+  if (currentRole === 'student') return <Navigate to="/student-home" replace />;
+  if (currentRole === 'staff') return <Navigate to="/staff-dashboard" replace />;
+  if (currentRole === 'admin') return <Navigate to="/admin-dashboard" replace />;
+  
+  return <Navigate to="/" replace />;
 }
 
 function App() {
   const navigate = useNavigate();
 
   const [items, setItems] = useState<Item[]>([]);
-  const [role, setRole] = useState<Role>(() => {
-    const stored = localStorage.getItem('userRole');
-    const resolvedRole = stored ? (stored.toLowerCase() as Role) : null;
-    console.log('[DEBUG] App Init - Stored UserRole:', stored, 'Resolved:', resolvedRole);
-    return resolvedRole;
+  const [role, setRole] = useState<Role | null>(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+      // Check expiration manually if needed, though usually backend rejects
+      if (decoded.exp * 1000 < Date.now()) {
+        localStorage.removeItem('token');
+        return null;
+      }
+      return decoded.role.toLowerCase() as Role;
+    } catch (e) {
+      console.error('Invalid token format');
+      localStorage.removeItem('token');
+      return null;
+    }
   });
   const [studentClaims, setStudentClaims] = useState<StudentClaim[]>([]);
 
@@ -123,8 +166,20 @@ function App() {
       fetchClaims();
     }, 5000);
 
-    return () => clearInterval(interval);
-  }, [role]);
+    const handleAuthError = () => {
+      if (role) {
+        localStorage.removeItem('token');
+        setRole(null);
+        navigate('/');
+      }
+    };
+    window.addEventListener('auth_error', handleAuthError);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('auth_error', handleAuthError);
+    };
+  }, [role, navigate]);
 
   
 
@@ -160,11 +215,16 @@ function App() {
   // LOGOUT
   // ==========================================
 
-  function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-    setRole(null);
-    navigate('/');
+  async function logout() {
+    try {
+      await api.post('/auth/logout', {});
+    } catch (e) {
+      console.error('Logout error', e);
+    } finally {
+      localStorage.removeItem('token');
+      setRole(null);
+      navigate('/');
+    }
   }
 
   // ==========================================
@@ -190,14 +250,14 @@ function App() {
       <Route
         path="/"
         element={
-          <HomePage items={items} />
+          <HomePage items={items} role={role} onLogout={logout} />
         }
       />
 
       <Route
         path="/item/:id"
         element={
-          <ItemDetailPage items={items} />
+          <ItemDetailPage items={items} currentRole={role} />
         }
       />
 
@@ -208,17 +268,21 @@ function App() {
       <Route
         path="/student-login"
         element={
-          <LoginPage
-            {...loginPages['/student-login']}
-            onLogin={(newRole, redirect) => loginAs(newRole, redirect)}
-          />
+          <RequireGuest currentRole={role}>
+            <LoginPage
+              {...loginPages['/student-login']}
+              onLogin={(newRole, redirect) => loginAs(newRole, redirect)}
+            />
+          </RequireGuest>
         }
       />
 
       <Route
         path="/student-signup"
         element={
-          <StudentSignupPage />
+          <RequireGuest currentRole={role}>
+            <StudentSignupPage />
+          </RequireGuest>
         }
       />
 
@@ -303,7 +367,7 @@ function App() {
             allowedRole="student"
             loginPath="/student-login"
           >
-            <StudentProfilePage />
+            <StudentProfilePage onLogout={logout} />
           </RequireAuth>
         }
       />
@@ -315,10 +379,12 @@ function App() {
       <Route
         path="/staff-login"
         element={
-          <LoginPage
-            {...loginPages['/staff-login']}
-            onLogin={(newRole, redirect) => loginAs(newRole, redirect)}
-          />
+          <RequireGuest currentRole={role}>
+            <LoginPage
+              {...loginPages['/staff-login']}
+              onLogin={(newRole, redirect) => loginAs(newRole, redirect)}
+            />
+          </RequireGuest>
         }
       />
 
@@ -430,7 +496,7 @@ function App() {
             allowedRole="staff"
             loginPath="/staff-login"
           >
-            <StaffProfilePage />
+            <StaffProfilePage onLogout={logout} />
           </RequireAuth>
         }
       />
@@ -442,10 +508,12 @@ function App() {
       <Route
         path="/admin-login"
         element={
-          <LoginPage
-            {...loginPages['/admin-login']}
-            onLogin={() => loginAs('admin')}
-          />
+          <RequireGuest currentRole={role}>
+            <LoginPage
+              {...loginPages['/admin-login']}
+              onLogin={() => loginAs('admin')}
+            />
+          </RequireGuest>
         }
       />
 
@@ -522,7 +590,7 @@ function App() {
             allowedRole="admin"
             loginPath="/admin-login"
           >
-            <AdminProfilePage />
+            <AdminProfilePage onLogout={logout} />
           </RequireAuth>
         }
       />

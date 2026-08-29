@@ -22,6 +22,9 @@ async function request(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      window.dispatchEvent(new Event('auth_error'));
+    }
     let data;
     try {
       data = await response.json();
