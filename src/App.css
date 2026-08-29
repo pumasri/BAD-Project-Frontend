@@ -37,6 +37,7 @@ body {
   overflow: hidden;
 
   background: #fff2e3;
+  --page-background-image: url('/abacCampus.jpeg');
 }
 
 .page-shell::before {
@@ -1112,7 +1113,7 @@ body {
   display: grid;
 
   grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+    repeat(2, minmax(0, 1fr));
 
   gap: 16px;
 
@@ -2707,4 +2708,96 @@ body {
   .success-actions button {
     width: 100% !important;
   }
+}
+/* =================================
+   ADMIN TABLES
+================================= */
+
+.admin-table-container {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(69, 55, 37, 0.05);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-table thead {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.admin-table th {
+  padding: 16px;
+  color: #594a3a;
+  font-weight: 600;
+}
+
+.admin-table td {
+  padding: 16px;
+  vertical-align: middle;
+}
+
+.admin-table-row {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background 0.2s ease;
+}
+
+.admin-table-row:hover {
+  background: rgba(163, 93, 63, 0.02);
+}
+
+.admin-table-row:last-child {
+  border-bottom: none;
+}
+
+.admin-table td strong {
+  color: #31281f;
+  font-weight: 600;
+}
+
+.admin-table td .muted-text {
+  color: #918477;
+}
+
+.action-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: white;
+  color: #594a3a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: rgba(163, 93, 63, 0.1);
+  border-color: rgba(163, 93, 63, 0.3);
+  color: #a35d3f;
+}
+
+.action-btn.danger {
+  color: #d93025;
+}
+
+.action-btn.danger:hover:not(:disabled) {
+  background: rgba(217, 48, 37, 0.1);
+  border-color: rgba(217, 48, 37, 0.3);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status-badge.role-badge {
+  background: rgba(0, 0, 0, 0.05);
+  color: #594a3a;
 }

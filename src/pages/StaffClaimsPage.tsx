@@ -42,23 +42,23 @@ export function StaffClaimsPage({ claims }: { claims: StudentClaim[] }) {
             {claims.map((claim) => (
               <div key={claim.id} className="staff-item-row">
                 <div className="staff-item-thumbnail">
-                  <span>{claim.category}</span>
+                  <span>{claim.foundReport?.category?.name || "Unknown"}</span>
                 </div>
 
                 <div className="staff-item-main">
-                  <h3>{claim.item}</h3>
-                  <p>Category: {claim.category}</p>
-                  <small>Submitted: {claim.date}</small>
+                  <h3>{claim.foundReport?.title || 'Unknown Item'}</h3>
+                  <p>Category: {claim.foundReport?.category?.name || 'Unknown Category'}</p>
+                  <small>Submitted: {new Date(claim.createdAt).toLocaleDateString()}</small>
                 </div>
 
                 <div className="staff-item-status">
                   <span
                     className={
-                      claim.status === 'Potential Match'
-                        ? 'status-badge status-matched'
-                        : claim.status === 'Resolved'
+                      claim.status === 'APPROVED'
                         ? 'status-badge status-resolved'
-                        : 'status-badge status-claim_in_progress'
+                        : claim.status === 'REJECTED'
+                        ? 'status-badge status-open'
+                        : 'status-badge status-matched'
                     }
                   >
                     {claim.status}

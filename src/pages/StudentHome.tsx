@@ -1,44 +1,45 @@
-import type { CSSProperties } from 'react';
+import { CSSProperties, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { campusImage } from '../utils';
-import { LogoutButton } from '../components/LogoutButton';
+import { campusImage, api } from '../utils';
 
 
 
-import type { StudentClaim } from '../types';
+import type { StudentClaim, Item } from '../types';
 
-const mockRecentItems = [
-  {
-    id: 1,
-    name: 'Black Wallet',
-    category: 'Wallet',
-    location: 'AU Library',
-    date: 'August 18, 2026',
-  },
-  {
-    id: 2,
-    name: 'AirPods Case',
-    category: 'Electronics',
-    location: 'Cafeteria',
-    date: 'August 17, 2026',
-  },
-  {
-    id: 3,
-    name: 'Student ID Card',
-    category: 'ID Card',
-    location: 'ABAC Building',
-    date: 'August 16, 2026',
-  },
-];
-
-export function StudentHome({
-  onLogout,
-  claims,
-}: {
-  onLogout: () => void | Promise<void>;
-  claims: StudentClaim[];
-}) {
+export function StudentHome({ onLogout, claims, items }: { onLogout: () => void, claims: StudentClaim[], items: Item[] }) {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState('Student');
+  const [userEmail, setUserEmail] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.get('/auth/me')
+      .then(res => {
+        if (res?.user) {
+          setUserName(res.user.name || 'Student');
+          setUserEmail(res.user.email || '');
+          setUserId(res.user.id || null);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  const formatStatus = (status: string) => {
+    if (!status) return '';
+    switch(status) {
+      case 'APPROVED': return 'Approved';
+      case 'MORE_INFORMATION_REQUIRED': return 'More Information Required';
+      case 'OPEN': return 'Open';
+      case 'MATCHED': return 'Matched';
+      case 'CLAIM_IN_PROGRESS': return 'Claim In Progress';
+      case 'RESOLVED': return 'Resolved';
+      case 'DONATED': return 'Donated';
+      case 'DISPOSED': return 'Disposed';
+      case 'ARCHIVED': return 'Archived';
+      default:
+        return status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    }
+  };
 
   return (
     <main
@@ -54,7 +55,7 @@ export function StudentHome({
         <header className="student-header">
           <div>
             <p className="eyebrow">STUDENT PORTAL</p>
-            <h1>Welcome back, Khaimuk</h1>
+            <h1>Welcome back, {userName.split(' ')[0]}</h1>
             <p className="student-header-description">
               Find lost items, report something you lost, and manage your
               claims.
@@ -184,29 +185,91 @@ export function StudentHome({
                 className="student-claim-card"
                 onClick={() => navigate(`/student-claims/${claim.id}`)}
               >
-                <div className="student-claim-icon">◈</div>
+                <div className="student-claim-icon" style={{ borderRadius: '50%', overflow: 'hidden' }}>
+                  {claim.foundReport?.images && claim.foundReport.images.length > 0 ? (
+                    <img 
+                      src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${claim.foundReport.images[0].objectKey}`} 
+                      alt={claim.foundReport.title} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    "◈"
+                  )}
+                </div>
 
                 <div className="student-claim-content">
-                  <span>{claim.category}</span>
-                  <strong>{claim.item}</strong>
-                  <p>Submitted {claim.date}</p>
+                  <strong style={{ display: 'block', fontSize: '1.05rem', color: '#594a3a', marginBottom: '2px' }}>{claim.foundReport?.title || 'Unknown Item'}</strong>
+                  <span style={{ fontSize: '0.85rem', color: '#918477' }}>
+                    {claim.foundReport?.category?.name || 'Uncategorized'} &middot; {claim.foundReport?.location || 'Location not specified'}
+                  </span>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#a89c92' }}>
+                    Submitted {new Date(claim.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
                 </div>
 
                 <div className="student-claim-status">
                   <span
                     className={
-                      claim.status === 'Potential Match'
+                      claim.status === "MORE_INFORMATION_REQUIRED"
                         ? 'status-badge status-match'
                         : 'status-badge status-review'
                     }
                   >
-                    {claim.status}
+                    {formatStatus(claim.status)}
                   </span>
 
                   <span className="action-arrow">→</span>
                 </div>
               </button>
             ))}
+          </div>
+        </section>
+
+        {/* My Lost Reports */}
+        <section className="student-section">
+          <div className="student-section-heading">
+            <div>
+              <p className="eyebrow">MY LOST REPORTS</p>
+              <h2>Items I reported lost</h2>
+            </div>
+          </div>
+
+          <div className="student-claims-list">
+            {items.filter(item => item.reportType === 'LOST' && item.createdBy?.id === userId).length > 0 ? (
+              items.filter(item => item.reportType === 'LOST' && item.createdBy?.id === userId).map((item) => (
+                <div key={item.id} className="student-claim-card" style={{ cursor: 'default', background: 'rgba(255, 255, 255, 0.5)' }}>
+                  <div className="student-claim-icon" style={{ borderRadius: '12px', overflow: 'hidden', background: 'rgba(217, 48, 37, 0.1)', color: '#d93025' }}>
+                    {item.images && item.images.length > 0 ? (
+                      <img 
+                        src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} 
+                        alt={item.title} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      "?"
+                    )}
+                  </div>
+
+                  <div className="student-claim-content" style={{ flex: 1 }}>
+                    <strong style={{ display: 'block', margin: '0 0 2px 0', fontSize: '1.05rem', color: '#594a3a' }}>{item.title}</strong>
+                    <span style={{ fontSize: '0.85rem', color: '#918477', display: 'block', marginBottom: '4px' }}>
+                      {item.category?.name || 'Uncategorized'} &middot; {item.location}
+                    </span>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#a89c92' }}>
+                      Reported {new Date(item.occurredAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
+
+                  <div className="student-claim-status">
+                    <span className="status-badge status-review">
+                      {formatStatus(item.status)}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p style={{ color: '#918477', fontStyle: 'italic', margin: '8px 0 0 0' }}>You haven't reported any lost items yet.</p>
+            )}
           </div>
         </section>
 
@@ -228,7 +291,7 @@ export function StudentHome({
           </div>
 
           <div className="student-items-grid">
-            {mockRecentItems.map((item) => (
+            {items.filter(item => item.reportType === 'FOUND').slice(0, 3).map((item) => (
               <button
                 type="button"
                 key={item.id}
@@ -236,14 +299,22 @@ export function StudentHome({
                 onClick={() => navigate(`/item/${item.id}`)}
               >
                 <div className="student-mini-item-image">
-                  <span>{item.category}</span>
+                  {item.images && item.images.length > 0 ? (
+                    <img 
+                      src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} 
+                      alt={item.title} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  ) : (
+                    <span>{item.category?.name}</span>
+                  )}
                 </div>
 
                 <div className="student-mini-item-content">
-                  <span>{item.category}</span>
-                  <strong>{item.name}</strong>
+                  <span>{item.category?.name}</span>
+                  <strong>{item.title}</strong>
                   <p>📍 {item.location}</p>
-                  <small>{item.date}</small>
+                  <small>{new Date(item.occurredAt).toLocaleDateString()}</small>
                 </div>
               </button>
             ))}
@@ -252,12 +323,12 @@ export function StudentHome({
 
         {/* Profile */}
         <section className="student-profile-card">
-          <div className="student-profile-avatar">K</div>
+          <div className="student-profile-avatar">{userName[0]?.toUpperCase() || 'S'}</div>
 
           <div className="student-profile-info">
             <p className="eyebrow">MY ACCOUNT</p>
-            <h2>Khaimuk Pumasri</h2>
-            <p>uXXXXXXXX@au.edu</p>
+            <h2>{userName}</h2>
+            <p>{userEmail || 'uXXXXXXXX@au.edu'}</p>
           </div>
 
           <button

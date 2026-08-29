@@ -1,59 +1,69 @@
-import { useState } from 'react';
-import type { CSSProperties, FormEvent } from 'react';
+import { useState, CSSProperties, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { campusImage } from '../utils';
-import { registerStudent } from '../services/authService';
-import closeEye from '../assets/images/close-eye.png';
-import openEye from '../assets/images/open-eye.png';
-import { isAuStudentEmail, isValidPassword, MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from '../utils/authValidation';
+import { campusImage, api, ApiError } from '../utils';
 
 export function StudentSignupPage() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  const [step, setStep] = useState<'REGISTER' | 'VERIFY'>('REGISTER');
+  
+  // Registration form state
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Verification form state
+  const [otpCode, setOtpCode] = useState('');
+  
   const [message, setMessage] = useState('');
-  const [isError, setIsError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleRegister(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    const normalizedEmail = email.trim().toLowerCase();
-    setMessage('');
-    setIsError(false);
-
-    if (!isAuStudentEmail(normalizedEmail)) {
-      setIsError(true);
-      setMessage('Enter a valid AU email, such as u1234567@au.edu.');
-      return;
-    }
-
+    
     if (password !== confirmPassword) {
-      setIsError(true);
-      setMessage('Passwords do not match.');
+      setMessage("Passwords do not match.");
       return;
     }
 
-    if (!isValidPassword(password)) {
-      setIsError(true);
-      setMessage(`Password must contain ${MIN_PASSWORD_LENGTH}–${MAX_PASSWORD_LENGTH} characters.`);
-      return;
-    }
-
-    setLoading(true);
+    setIsLoading(true);
+    setMessage('Creating account...');
 
     try {
-      await registerStudent(normalizedEmail, name.trim(), password);
-      setMessage('Account created. You can now log in.');
+      await api.post('/auth/register', { email, name, password });
+      setMessage('Account created! Please check your email for the verification code.');
+      setStep('VERIFY');
     } catch (error) {
-      setIsError(true);
-      setMessage(error instanceof Error ? error.message : 'Registration failed.');
+      if (error instanceof ApiError) {
+        setMessage(error.message);
+      } else {
+        setMessage('An unexpected error occurred. Please try again.');
+      }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+    }
+  }
+
+  async function handleVerify(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    
+    setIsLoading(true);
+    setMessage('Verifying code...');
+
+    try {
+      await api.post('/auth/verify-otp', { email, code: otpCode });
+      setMessage('Email verified successfully! Redirecting to login...');
+      setTimeout(() => {
+        navigate('/student-login');
+      }, 1500);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setMessage(error.message);
+      } else {
+        setMessage('Invalid or expired verification code.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -76,102 +86,89 @@ export function StudentSignupPage() {
         </button>
 
         <div className="card-heading">
-          <p className="eyebrow">STUDENT ACCOUNT</p>
-          <h1>Create Account</h1>
+          <h1>{step === 'REGISTER' ? 'Create Account' : 'Verify Email'}</h1>
           <p>
-            Create your AU student account to submit ownership claims.
+            {step === 'REGISTER' 
+              ? 'Join the campus network to claim and report items.' 
+              : `We sent a 6-digit code to ${email}. Check your backend terminal output in development mode to see the code.`}
           </p>
         </div>
 
-        <form
-          className="login-form"
-          onSubmit={handleSubmit}
-        >
-          <label className="field">
-            <span>Full Name</span>
-            <input
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Your full name"
-              autoComplete="name"
-              maxLength={120}
-              required
-            />
-          </label>
-
-          <label className="field">
-            <span>AU Student Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="u1234567@au.edu"
-              autoComplete="email"
-              pattern="[uU][0-9]{7}@au\.edu"
-              maxLength={254}
-              required
-            />
-          </label>
-
-          <label className="field">
-            <span>Password</span>
-            <span className="role-password-wrapper">
+        {step === 'REGISTER' && (
+          <form onSubmit={handleRegister}>
+            <label className="field">
+              <span>Full Name</span>
               <input
-                type={showPassword ? 'text' : 'password'}
+                type="text"
+                placeholder="John Doe"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>University Email</span>
+              <input
+                type="email"
+                placeholder="u1234567@au.edu"
+                required
+                pattern="^u[0-9]{7}@au\.edu$"
+                title="Must be an AU email address like u1234567@au.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>Password</span>
+              <input
+                type="password"
+                required
+                minLength={8}
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Create a password"
-                autoComplete="new-password"
-                minLength={MIN_PASSWORD_LENGTH}
-                maxLength={MAX_PASSWORD_LENGTH}
-                required
+                onChange={(e) => setPassword(e.target.value)}
               />
-              <button
-                type="button"
-                className="role-eye-button"
-                onClick={() => setShowPassword((current) => !current)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                <img src={showPassword ? openEye : closeEye} alt="" />
-              </button>
-            </span>
-          </label>
-
-          <label className="field">
-            <span>Confirm Password</span>
-            <span className="role-password-wrapper">
+            </label>
+            <label className="field">
+              <span>Confirm Password</span>
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                placeholder="Confirm your password"
-                autoComplete="new-password"
-                minLength={MIN_PASSWORD_LENGTH}
-                maxLength={MAX_PASSWORD_LENGTH}
+                type="password"
                 required
+                minLength={8}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
-              <button
-                type="button"
-                className="role-eye-button"
-                onClick={() => setShowConfirmPassword((current) => !current)}
-                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-              >
-                <img src={showConfirmPassword ? openEye : closeEye} alt="" />
-              </button>
-            </span>
-          </label>
+            </label>
+            <button type="submit" className="login-button" disabled={isLoading}>
+              {isLoading ? 'Creating...' : 'Sign Up'}
+            </button>
+          </form>
+        )}
 
-          <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Create Student Account'}
-          </button>
+        {step === 'VERIFY' && (
+          <form onSubmit={handleVerify}>
+            <label className="field">
+              <span>6-Digit Verification Code</span>
+              <input
+                type="text"
+                placeholder="123456"
+                required
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value)}
+                style={{ fontSize: '1.25rem', letterSpacing: '4px', textAlign: 'center' }}
+              />
+            </label>
+            <button type="submit" className="login-button" disabled={isLoading}>
+              {isLoading ? 'Verifying...' : 'Verify Email'}
+            </button>
+          </form>
+        )}
 
-          {message && (
-            <p className="form-status" role={isError ? 'alert' : 'status'}>
-              {message}
-            </p>
-          )}
-        </form>
+        {message && (
+          <div className="login-error" style={{ color: message.includes('success') ? '#2e7d32' : undefined }}>
+            {message}
+          </div>
+        )}
       </section>
     </main>
   );
