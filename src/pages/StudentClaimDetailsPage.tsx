@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { api, ApiError } from '../utils';
+import { api, ApiError, uploadUrl } from '../utils';
 import type { StudentClaim } from '../types';
 
 export function StudentClaimDetailsPage() {
@@ -55,9 +55,28 @@ export function StudentClaimDetailsPage() {
 
   const claimIdDisplay = claim.id.substring(0, 8);
   const titleDisplay = claim.foundReport?.title || 'Unknown Item';
-  const categoryDisplay = claim.foundReport?.category?.name || 'Unknown Category';
-  const locationDisplay = claim.foundReport?.location || 'Unknown Location';
-  const dateDisplay = new Date(claim.createdAt).toLocaleDateString();
+  const categoryDisplay = claim.foundReport?.category?.name || 'Category not available';
+  const locationDisplay = claim.foundReport?.location || 'Location not specified';
+  const dateDisplay = new Date(claim.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const formatStatus = (status: string) => {
+    if (!status) return '';
+    switch(status) {
+      case 'APPROVED': return 'Approved';
+      case 'MORE_INFORMATION_REQUIRED': return 'More Information Required';
+      case 'OPEN': return 'Open';
+      case 'MATCHED': return 'Matched';
+      case 'CLAIM_IN_PROGRESS': return 'Claim In Progress';
+      case 'RESOLVED': return 'Resolved';
+      case 'DONATED': return 'Donated';
+      case 'DISPOSED': return 'Disposed';
+      case 'ARCHIVED': return 'Archived';
+      case 'PENDING': return 'Pending';
+      case 'REJECTED': return 'Rejected';
+      default:
+        return status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    }
+  };
 
   return (
     <main className="page-shell">
@@ -71,66 +90,97 @@ export function StudentClaimDetailsPage() {
         </button>
 
         <div style={{ marginBottom: '32px' }}>
-          <p className="eyebrow">CLAIM #{claimIdDisplay}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+          <p className="eyebrow">CLAIM #{claimIdDisplay.toUpperCase()}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
             <h1 style={{ margin: 0, fontSize: '2.5rem', color: '#594a3a' }}>{titleDisplay}</h1>
-            <span className={`status-badge ${claim.status === 'MORE_INFORMATION_REQUIRED' ? 'status-matched' : claim.status === 'APPROVED' ? 'status-resolved' : 'status-open'}`} style={{ fontSize: '1rem', padding: '8px 16px' }}>
-              {claim.status}
+            <span className={`status-badge ${claim.status === 'MORE_INFORMATION_REQUIRED' ? 'status-matched' : claim.status === 'APPROVED' ? 'status-resolved' : claim.status === 'REJECTED' ? 'status-archived' : 'status-open'}`} style={{ fontSize: '1rem', padding: '8px 16px' }}>
+              {formatStatus(claim.status)}
             </span>
           </div>
         </div>
 
         <div className="detail-layout">
+          {/* Left Column */}
           <div>
-            <div style={{ background: 'rgba(255,255,255,0.6)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 16px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Your Claim</h3>
+            <div style={{ background: 'rgba(255,255,255,0.6)', padding: '32px', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '24px' }}>
+              <h3 style={{ margin: '0 0 24px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Your Claim</h3>
 
-              <div style={{ marginBottom: '16px' }}>
-                <strong style={{ display: 'block', color: '#594a3a', fontSize: '1.2rem', marginBottom: '4px' }}>{titleDisplay}</strong>
-                <span style={{ color: '#918477' }}>{categoryDisplay}</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+                <div>
+                  <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px' }}>Item</strong>
+                  <span style={{ color: '#594a3a', fontSize: '1.1rem', fontWeight: 500 }}>{titleDisplay}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px' }}>Category</strong>
+                  <span style={{ color: '#594a3a', fontSize: '1.1rem' }}>{categoryDisplay}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px' }}>Location</strong>
+                  <span style={{ color: '#594a3a', fontSize: '1.1rem' }}>{locationDisplay}</span>
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px' }}>Submitted</strong>
+                  <span style={{ color: '#594a3a', fontSize: '1.1rem' }}>{dateDisplay}</span>
+                </div>
               </div>
 
-              <p style={{ margin: '0 0 8px', color: '#594a3a' }}><strong>Submitted:</strong> {dateDisplay}</p>
-              <p style={{ margin: '0 0 16px', color: '#594a3a' }}><strong>Location:</strong> {locationDisplay}</p>
-
-              <h4 style={{ margin: '0 0 8px', color: '#594a3a' }}>Identifying Details you provided:</h4>
-              <p style={{ margin: 0, color: '#918777', lineHeight: '1.6', marginBottom: claim.evidence && claim.evidence.length > 0 ? '24px' : '0' }}>{claim.identifyingDetails}</p>
-
-              {claim.evidence && claim.evidence.length > 0 && (
-                <div>
-                  <h4 style={{ margin: '0 0 12px', color: '#a35d3f', fontSize: '0.85rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Evidence Attachments</h4>
-                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                    {claim.evidence.map((ev) => (
-                      ev.evidenceType === 'IMAGE' && ev.objectKey && (
-                        <div key={ev.id} style={{ maxWidth: '300px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)' }}>
-                          <img
-                            src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${ev.objectKey}`}
-                            alt="Proof of ownership"
-                            style={{ width: '100%', height: 'auto', display: 'block' }}
-                          />
-                        </div>
-                      )
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div>
+                <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '8px' }}>Identifying Details</strong>
+                <p style={{ margin: 0, color: '#594a3a', lineHeight: '1.6', fontSize: '1.05rem' }}>{claim.identifyingDetails || 'No additional details provided.'}</p>
+              </div>
             </div>
 
-            <div style={{ background: 'rgba(255,255,255,0.6)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
-              <h3 style={{ margin: '0 0 16px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Status</h3>
-              <p style={{ margin: 0, color: '#594a3a', lineHeight: '1.6' }}>
-                {claim.status === 'MORE_INFORMATION_REQUIRED'
-                  ? 'We need more information to verify your claim. Please check the notes.'
-                  : claim.status === 'APPROVED'
-                  ? 'This claim has been approved! You can collect your item.'
-                  : claim.status === 'REJECTED'
-                  ? 'This claim was rejected.'
-                  : 'Staff is currently reviewing your ownership claim. We will notify you if a match is confirmed.'}
-              </p>
+            {claim.evidence && claim.evidence.length > 0 && (
+              <div style={{ background: 'rgba(255,255,255,0.6)', padding: '32px', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <h3 style={{ margin: '0 0 24px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Evidence Attachments</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                  {claim.evidence.map((ev) => (
+                    ev.evidenceType === 'IMAGE' && ev.objectKey && (
+                      <div key={ev.id} style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', background: '#fff', aspectRatio: '4/3' }}>
+                        <img
+                          src={uploadUrl(ev.objectKey)}
+                          alt="Proof of ownership"
+                          style={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
+                          onClick={() => window.open(uploadUrl(ev.objectKey!), '_blank')}
+                        />
+                      </div>
+                    )
+                  ))}
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#a89c92', margin: '16px 0 0 0' }}>Click an image to view it in full size.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column */}
+          <div>
+            <div style={{ background: 'white', padding: '32px', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+              <h3 style={{ margin: '0 0 24px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Claim Status</h3>
+
+              <div style={{ marginBottom: '24px' }}>
+                <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '8px' }}>Current State</strong>
+                <span className={`status-badge ${claim.status === 'MORE_INFORMATION_REQUIRED' ? 'status-matched' : claim.status === 'APPROVED' ? 'status-resolved' : claim.status === 'REJECTED' ? 'status-archived' : 'status-open'}`} style={{ fontSize: '1.1rem', padding: '6px 12px' }}>
+                  {formatStatus(claim.status)}
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '8px' }}>Status Information</strong>
+                <p style={{ margin: 0, color: '#594a3a', lineHeight: '1.6' }}>
+                  {claim.status === 'MORE_INFORMATION_REQUIRED'
+                    ? 'We need more information to verify your claim. Please read the staff note carefully.'
+                    : claim.status === 'APPROVED'
+                    ? 'This claim has been approved! You can now collect your item from the lost and found office.'
+                    : claim.status === 'REJECTED'
+                    ? 'Unfortunately, this claim was rejected.'
+                    : 'Staff is currently reviewing your ownership claim. We will notify you if a match is confirmed.'}
+                </p>
+              </div>
+
               {claim.reviewNote && (
-                <div style={{ marginTop: '16px', padding: '16px', background: '#fff', borderRadius: '8px' }}>
-                  <p style={{ margin: '0 0 4px', fontSize: '0.85rem', color: '#a35d3f', fontWeight: 'bold' }}>Staff Note:</p>
-                  <p style={{ margin: 0, color: '#594a3a' }}>{claim.reviewNote}</p>
+                <div style={{ padding: '16px', background: 'rgba(163, 93, 63, 0.05)', borderRadius: '12px', borderLeft: '4px solid #a35d3f' }}>
+                  <p style={{ margin: '0 0 8px', fontSize: '0.85rem', color: '#a35d3f', fontWeight: 'bold', textTransform: 'uppercase' }}>Staff Note</p>
+                  <p style={{ margin: 0, color: '#594a3a', fontStyle: 'italic', lineHeight: '1.6' }}>"{claim.reviewNote}"</p>
                 </div>
               )}
             </div>

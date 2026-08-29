@@ -24,6 +24,23 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
       .catch(console.error);
   }, []);
 
+  const formatStatus = (status: string) => {
+    if (!status) return '';
+    switch(status) {
+      case 'APPROVED': return 'Approved';
+      case 'MORE_INFORMATION_REQUIRED': return 'More Information Required';
+      case 'OPEN': return 'Open';
+      case 'MATCHED': return 'Matched';
+      case 'CLAIM_IN_PROGRESS': return 'Claim In Progress';
+      case 'RESOLVED': return 'Resolved';
+      case 'DONATED': return 'Donated';
+      case 'DISPOSED': return 'Disposed';
+      case 'ARCHIVED': return 'Archived';
+      default:
+        return status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    }
+  };
+
   return (
     <main
       className="page-shell student-shell"
@@ -187,9 +204,13 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                 </div>
 
                 <div className="student-claim-content">
-                  <span>{claim.foundReport?.category?.name}</span>
-                  <strong>{claim.foundReport?.title}</strong>
-                  <p>Submitted {new Date(claim.createdAt).toLocaleDateString()}</p>
+                  <strong style={{ display: 'block', fontSize: '1.05rem', color: '#594a3a', marginBottom: '2px' }}>{claim.foundReport?.title || 'Unknown Item'}</strong>
+                  <span style={{ fontSize: '0.85rem', color: '#918477' }}>
+                    {claim.foundReport?.category?.name || 'Uncategorized'} &middot; {claim.foundReport?.location || 'Location not specified'}
+                  </span>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#a89c92' }}>
+                    Submitted {new Date(claim.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
                 </div>
 
                 <div className="student-claim-status">
@@ -200,7 +221,7 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                         : 'status-badge status-review'
                     }
                   >
-                    {claim.status}
+                    {formatStatus(claim.status)}
                   </span>
 
                   <span className="action-arrow">→</span>
@@ -236,14 +257,18 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                   </div>
 
                   <div className="student-claim-content" style={{ flex: 1 }}>
-                    <span>{item.category?.name}</span>
-                    <strong style={{ display: 'block', margin: '4px 0', fontSize: '1.1rem' }}>{item.title}</strong>
-                    <p style={{ margin: 0, fontSize: '0.85rem' }}>📍 {item.location} | Reported {new Date(item.occurredAt).toLocaleDateString()}</p>
+                    <strong style={{ display: 'block', margin: '0 0 2px 0', fontSize: '1.05rem', color: '#594a3a' }}>{item.title}</strong>
+                    <span style={{ fontSize: '0.85rem', color: '#918477', display: 'block', marginBottom: '4px' }}>
+                      {item.category?.name || 'Uncategorized'} &middot; {item.location}
+                    </span>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#a89c92' }}>
+                      Reported {new Date(item.occurredAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
                   </div>
 
                   <div className="student-claim-status">
                     <span className="status-badge status-review">
-                      {item.status}
+                      {formatStatus(item.status)}
                     </span>
                     <button
                       type="button"

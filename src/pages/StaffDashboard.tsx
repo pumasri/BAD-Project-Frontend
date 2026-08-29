@@ -64,7 +64,7 @@ export function StaffDashboard({
             onClick={() => navigate('/staff/items')}
           >
             <span className="dashboard-icon">◷</span>
-            <strong>Manage Items</strong>
+            <strong>Found Items</strong>
             <p>Review and manage reported found items.</p>
           </button>
 
