@@ -11,11 +11,12 @@ export function StaffManageItemsPage({ items }: { items: Item[] }) {
 
   const filteredItems = useMemo(() => {
     const query = search.trim().toLowerCase();
+    const foundItems = items.filter((item) => item.reportType === 'FOUND');
 
-    return items.filter((item) => {
+    return foundItems.filter((item) => {
       const matchesSearch =
         !query ||
-        [item.name, item.category, item.location, item.description]
+        [item.title, item.category, item.location, item.description]
           .join(' ')
           .toLowerCase()
           .includes(query);
@@ -91,18 +92,18 @@ export function StaffManageItemsPage({ items }: { items: Item[] }) {
             {filteredItems.map((item) => (
               <article key={item.id} className="staff-item-row">
                 <div className="staff-item-thumbnail">
-                  {item.image ? (
-                    <img src={item.image} alt={item.name} />
+                  {item.images && item.images.length > 0 ? (
+                    <img src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`} alt={item.title} />
                   ) : (
-                    <span>{item.category}</span>
+                    <span>{item.category?.name}</span>
                   )}
                 </div>
 
                 <div className="staff-item-main">
-                  <span className="item-category">{item.category}</span>
-                  <h3>{item.name}</h3>
+                  <span className="item-category">{item.category?.name}</span>
+                  <h3>{item.title}</h3>
                   <p>📍 {item.location}</p>
-                  <small>Reported {item.date}</small>
+                  <small>Reported {new Date(item.occurredAt).toLocaleDateString()}</small>
                 </div>
 
                 <div className="staff-item-status">

@@ -1,11 +1,20 @@
+import { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { StudentClaim } from '../types';
+import { campusImage } from '../utils';
 
 export function StudentClaimsPage({ claims }: { claims: StudentClaim[] }) {
   const navigate = useNavigate();
 
   return (
-    <main className="page-shell">
+    <main
+      className="page-shell student-shell"
+      style={
+        {
+          '--page-background-image': `url(${campusImage})`,
+        } as CSSProperties
+      }
+    >
       <section className="dashboard-card">
         <div className="dashboard-header">
           <div>
@@ -39,16 +48,24 @@ export function StudentClaimsPage({ claims }: { claims: StudentClaim[] }) {
                 onClick={() => navigate(`/student-claims/${claim.id}`)}
                 style={{ width: '100%', textAlign: 'left', background: 'rgba(255, 255, 255, 0.7)', border: '1px solid rgba(93, 82, 64, 0.1)', padding: '20px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}
               >
-                <div style={{ background: 'rgba(163, 93, 63, 0.1)', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', color: '#a35d3f', fontWeight: 'bold' }}>
-                  ◈
+                <div style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', overflow: 'hidden', background: 'rgba(163, 93, 63, 0.1)', color: '#a35d3f', fontWeight: 'bold' }}>
+                  {claim.foundReport?.images && claim.foundReport.images.length > 0 ? (
+                    <img
+                      src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${claim.foundReport.images[0].objectKey}`}
+                      alt={claim.foundReport.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    "◈"
+                  )}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <span style={{ fontSize: '0.85rem', color: '#a35d3f', fontWeight: 'bold', textTransform: 'uppercase' }}>{claim.category}</span>
-                  <strong style={{ display: 'block', fontSize: '1.2rem', color: '#594a3a', margin: '4px 0' }}>{claim.item}</strong>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#918477' }}>Submitted {claim.date}</p>
+                  <span style={{ fontSize: '0.85rem', color: '#a35d3f', fontWeight: 'bold', textTransform: 'uppercase' }}>{claim.foundReport?.category?.name || 'Unknown Category'}</span>
+                  <strong style={{ display: 'block', fontSize: '1.2rem', color: '#594a3a', margin: '4px 0' }}>{claim.foundReport?.title || 'Unknown Item'}</strong>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#918477' }}>Submitted {new Date(claim.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                  <span className={`status-badge ${claim.status === 'Potential Match' ? 'status-matched' : claim.status === 'Resolved' ? 'status-resolved' : 'status-open'}`}>
+                  <span className={`status-badge ${claim.status === 'APPROVED' ? 'status-resolved' : claim.status === 'REJECTED' ? 'status-open' : 'status-matched'}`}>
                     {claim.status}
                   </span>
                   <span style={{ color: '#a35d3f', fontSize: '0.9rem', fontWeight: 'bold' }}>View →</span>

@@ -1,6 +1,7 @@
 import type { ItemStatus } from '../types';
+import campusImageAsset from '../assets/images/abacCampus.jpeg';
 
-export const campusImage = '/abacCampus.jpeg';
+export const campusImage = campusImageAsset;
 
 export function formatStatus(status: ItemStatus) {
   const statusNames: Record<ItemStatus, string> = {
@@ -15,3 +16,4 @@ export function formatStatus(status: ItemStatus) {
 
   return statusNames[status];
 }
+export * from './api';
