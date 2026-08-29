@@ -88,6 +88,16 @@ export function StaffDashboard({
             <p>Review items reported lost by students.</p>
           </button>
 
+          <button
+            type="button"
+            className="dashboard-action-card"
+            onClick={() => navigate('/staff/matches')}
+          >
+            <span className="dashboard-icon">≈</span>
+            <strong>AI Match Review</strong>
+            <p>Review, confirm, or reject suggested item matches.</p>
+          </button>
+
         </div>
 
         <div className="staff-recent-section">

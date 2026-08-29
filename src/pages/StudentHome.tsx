@@ -245,6 +245,13 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                     <span className="status-badge status-review">
                       {item.status}
                     </span>
+                    <button
+                      type="button"
+                      className="student-section-link"
+                      onClick={() => navigate(`/student/lost-reports/${item.id}/matches`)}
+                    >
+                      Suggested Matches →
+                    </button>
                   </div>
                 </div>
               ))

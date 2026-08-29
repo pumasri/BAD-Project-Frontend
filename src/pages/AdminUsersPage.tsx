@@ -19,7 +19,6 @@ export function AdminUsersPage() {
   // New staff form state
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createError, setCreateError] = useState('');
 
@@ -48,14 +47,12 @@ export function AdminUsersPage() {
       await api.post('/admin/users', {
         name: newName,
         email: newEmail,
-        password: newPassword,
         roleName: 'STAFF'
       });
 
       // Reset form and close modal
       setNewName('');
       setNewEmail('');
-      setNewPassword('');
       setShowCreateModal(false);
 
       // Refresh user list
@@ -173,15 +170,9 @@ export function AdminUsersPage() {
                     style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }}
                   />
                 </div>
-                <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Temporary Password</label>
-                  <input
-                    type="password" required
-                    value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }}
-                    placeholder="Min 8 characters"
-                  />
-                </div>
+                <p style={{ marginBottom: '24px', color: '#786b5c', lineHeight: 1.5 }}>
+                  The staff member will sign in with this AU Microsoft account. No password is created here.
+                </p>
 
                 {createError && (
                   <p style={{ color: '#d93025', marginBottom: '16px', fontSize: '0.9rem' }}>{createError}</p>

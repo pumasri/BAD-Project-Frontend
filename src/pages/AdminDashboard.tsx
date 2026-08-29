@@ -62,6 +62,12 @@ export function AdminDashboard({
             <strong>API Integrations</strong>
             <p>Manage API keys and webhooks.</p>
           </button>
+
+          <button type="button" className="dashboard-action-card" onClick={() => navigate('/admin/matches')}>
+            <span className="dashboard-icon">≈</span>
+            <strong>AI Match Review</strong>
+            <p>Review suggestions and retry matching for eligible reports.</p>
+          </button>
         </div>
       </section>
     </main>

@@ -44,20 +44,20 @@ async function request(endpoint: string, options: RequestInit = {}) {
 }
 
 export const api = {
-  get: (endpoint: string) => request(endpoint, { method: 'GET' }),
-  post: (endpoint: string, data?: unknown) =>
+  get: <T = any>(endpoint: string) => request(endpoint, { method: 'GET' }) as Promise<T>,
+  post: <T = any>(endpoint: string, data?: unknown) =>
     request(endpoint, {
       method: 'POST',
       body: data === undefined ? undefined : JSON.stringify(data),
-    }),
-  postForm: (endpoint: string, data: FormData) =>
-    request(endpoint, { method: 'POST', body: data }),
-  patch: (endpoint: string, data?: unknown) =>
+    }) as Promise<T>,
+  postForm: <T = any>(endpoint: string, data: FormData) =>
+    request(endpoint, { method: 'POST', body: data }) as Promise<T>,
+  patch: <T = any>(endpoint: string, data?: unknown) =>
     request(endpoint, {
       method: 'PATCH',
       body: data === undefined ? undefined : JSON.stringify(data),
-    }),
-  del: (endpoint: string) => request(endpoint, { method: 'DELETE' }),
+    }) as Promise<T>,
+  del: <T = any>(endpoint: string) => request(endpoint, { method: 'DELETE' }) as Promise<T>,
 };
 
 export function uploadUrl(objectKey: string) {

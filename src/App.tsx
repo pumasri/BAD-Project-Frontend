@@ -14,6 +14,7 @@ import { StudentReportLostItemPage } from './pages/StudentReportLostItemPage';
 import { StudentClaimsPage } from './pages/StudentClaimsPage';
 import { StudentClaimDetailsPage } from './pages/StudentClaimDetailsPage';
 import { StudentProfilePage } from './pages/StudentProfilePage';
+import { StudentSuggestedMatchesPage } from './pages/StudentSuggestedMatchesPage';
 import { StaffDashboard } from './pages/StaffDashboard';
 import { StaffClaimsPage } from './pages/StaffClaimsPage';
 import { StaffClaimDetailsPage } from './pages/StaffClaimDetailsPage';
@@ -28,6 +29,7 @@ import { AdminCategoriesPage } from './pages/AdminCategoriesPage';
 import { AdminAuditLogsPage } from './pages/AdminAuditLogsPage';
 import { AdminApiIntegrationsPage } from './pages/AdminApiIntegrationsPage';
 import { AdminProfilePage } from './pages/AdminProfilePage';
+import { MatchReviewPage } from './pages/MatchReviewPage';
 import { AIChatbot } from './components/AIChatbot';
 
 import './App.css';
@@ -145,10 +147,6 @@ function App() {
         <Route path="/student-login" element={<Navigate to="/login" replace />} />
         <Route path="/staff-login" element={<Navigate to="/login" replace />} />
         <Route path="/admin-login" element={<Navigate to="/login" replace />} />
-        <Route path="/student-signup" element={<Navigate to="/login" replace />} />
-        <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
-        <Route path="/reset-password" element={<Navigate to="/login" replace />} />
-
         <Route
           path="/student-home"
           element={guard('STUDENT', <StudentHome onLogout={logout} claims={studentClaims} items={items} />)}
@@ -172,6 +170,10 @@ function App() {
         <Route
           path="/student-profile"
           element={guard('STUDENT', <StudentProfilePage onLogout={logout} />)}
+        />
+        <Route
+          path="/student/lost-reports/:id/matches"
+          element={guard('STUDENT', <StudentSuggestedMatchesPage />)}
         />
 
         <Route
@@ -206,6 +208,10 @@ function App() {
           path="/staff-profile"
           element={guard('STAFF', <StaffProfilePage onLogout={logout} />)}
         />
+        <Route
+          path="/staff/matches"
+          element={guard('STAFF', <MatchReviewPage role="STAFF" items={items} />)}
+        />
 
         <Route
           path="/admin-dashboard"
@@ -221,6 +227,10 @@ function App() {
         <Route
           path="/admin-profile"
           element={guard('ADMIN', <AdminProfilePage user={user!} onLogout={logout} />)}
+        />
+        <Route
+          path="/admin/matches"
+          element={guard('ADMIN', <MatchReviewPage role="ADMIN" items={items} />)}
         />
 
         <Route path="*" element={<Navigate to="/" replace />} />
