@@ -85,6 +85,46 @@ export interface ClaimEvidence {
   claimRequestId: string;
 }
 
+export type MatchConfidence = 'HIGH' | 'POSSIBLE';
+export type MatchStatus = 'SUGGESTED' | 'CONFIRMED' | 'REJECTED' | 'CLAIMED' | 'RESOLVED';
+
+export interface StudentSuggestedMatch {
+  id: string;
+  score: number;
+  confidence: MatchConfidence;
+  status: MatchStatus;
+  reasons: string[];
+  foundItem: {
+    category: string | null;
+    approximateLocation: string;
+    approximateDate: string;
+  };
+}
+
+export interface MatchScores {
+  totalScore: number;
+  descriptionSimilarityScore: number;
+  categoryScore: number;
+  colorScore: number;
+  locationScore: number;
+  dateScore: number;
+}
+
+export interface MatchDetail extends MatchScores {
+  id: string;
+  confidence: MatchConfidence;
+  reasons: string[];
+  status: MatchStatus;
+  matchSource: string;
+  reviewedAt?: string | null;
+  createdAt: string;
+  lostReportId: string;
+  foundReportId: string;
+  lostReport: Item;
+  foundReport: Item;
+  reviewer?: { id: string; fullName: string } | null;
+}
+
 export type LoginPageConfig = {
   role: 'student' | 'staff' | 'admin';
   title: string;

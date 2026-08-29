@@ -1,6 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 import { api, ApiError } from '../utils';
 
 interface User {
@@ -24,23 +23,10 @@ export function AdminUsersPage() {
   // New staff form state
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createError, setCreateError] = useState('');
 
-  // Get current user ID to prevent self-deactivation
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded = jwtDecode<{ sub: string }>(token);
-        setCurrentUserId(decoded.sub);
-      } catch (e) {
-        // Handle invalid token
-      }
-    }
     fetchUsers();
   }, []);
 
@@ -65,15 +51,13 @@ export function AdminUsersPage() {
       await api.post('/admin/users', {
         name: newName,
         email: newEmail,
-        password: newPassword,
         roleName: 'STAFF'
       });
-      
+
       setNewName('');
       setNewEmail('');
-      setNewPassword('');
       setShowCreateModal(false);
-      
+
       fetchUsers();
     } catch (error) {
       if (error instanceof ApiError) {
@@ -167,16 +151,16 @@ export function AdminUsersPage() {
             <span style={{ padding: '10px 16px', color: '#918477', display: 'flex', alignItems: 'center' }}>
               🔍
             </span>
-            <input 
-              type="text" 
-              placeholder="Search by name or email..." 
-              style={{ width: '100%', padding: '10px 16px 10px 0', border: 'none', outline: 'none', background: 'transparent' }} 
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              style={{ width: '100%', padding: '10px 16px 10px 0', border: 'none', outline: 'none', background: 'transparent' }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <select 
-            className="staff-status-filter" 
+          <select
+            className="staff-status-filter"
             style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', background: 'white', outline: 'none', color: '#594a3a', minWidth: '180px' }}
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
@@ -229,7 +213,7 @@ export function AdminUsersPage() {
                     </span>
                   </td>
                   <td>
-                    <button 
+                    <button
                       className="action-btn"
                       style={{
                         background: 'transparent',
@@ -237,23 +221,18 @@ export function AdminUsersPage() {
                         color: user.isActive ? '#d93025' : '#4f7e56',
                         padding: '6px 16px',
                         borderRadius: '20px',
-                        cursor: user.id === currentUserId ? 'not-allowed' : 'pointer',
-                        opacity: user.id === currentUserId ? 0.5 : 1,
+                        cursor: 'pointer',
                         fontSize: '0.85rem',
                         fontWeight: 'bold',
                         transition: 'all 0.2s ease'
                       }}
                       onMouseOver={(e) => {
-                        if (user.id !== currentUserId) {
-                          e.currentTarget.style.background = user.isActive ? 'rgba(217, 48, 37, 0.1)' : 'rgba(83, 132, 91, 0.1)';
-                        }
+                        e.currentTarget.style.background = user.isActive ? 'rgba(217, 48, 37, 0.1)' : 'rgba(83, 132, 91, 0.1)';
                       }}
                       onMouseOut={(e) => {
                         e.currentTarget.style.background = 'transparent';
                       }}
                       onClick={() => toggleUserStatus(user.id, user.isActive)}
-                      disabled={user.id === currentUserId}
-                      title={user.id === currentUserId ? "You cannot deactivate your own account." : ""}
                     >
                       {user.isActive ? 'Deactivate' : 'Activate'}
                     </button>
@@ -267,7 +246,7 @@ export function AdminUsersPage() {
         {/* Create Staff Modal */}
         {showCreateModal && (
           <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             background: 'rgba(0, 0, 0, 0.15)', zIndex: 100,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             backdropFilter: 'blur(2px)'
@@ -281,42 +260,37 @@ export function AdminUsersPage() {
               <form onSubmit={handleCreateStaff} className="login-form">
                 <div className="field">
                   <span>Full Name</span>
-                  <input 
-                    type="text" required 
+                  <input
+                    type="text" required
                     value={newName} onChange={e => setNewName(e.target.value)}
                   />
                 </div>
                 <div className="field">
                   <span>Email Address</span>
-                  <input 
-                    type="email" required 
+                  <input
+                    type="email" required
                     value={newEmail} onChange={e => setNewEmail(e.target.value)}
                   />
                 </div>
-                <div className="field" style={{ marginBottom: '8px' }}>
-                  <span>Temporary Password</span>
-                  <input 
-                    type="password" required 
-                    value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                    placeholder="Min 8 characters"
-                  />
-                </div>
-                
+                <p style={{ marginBottom: '24px', color: '#786b5c', lineHeight: 1.5 }}>
+                  The staff member will sign in with this AU Microsoft account. No password is created here.
+                </p>
+
                 {createError && (
                   <p className="form-status" style={{ margin: '0 0 16px 0' }}>{createError}</p>
                 )}
 
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowCreateModal(false)}
                     className="view-item-button"
                     style={{ width: 'auto' }}
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isSubmitting}
                     className="submit-button"
                     style={{ width: 'auto' }}

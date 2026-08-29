@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { api, ApiError } from '../utils';
+import { api, ApiError, uploadUrl } from '../utils';
 import type { StudentClaim } from '../types';
 
 export function StudentClaimDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  
+
   const [claim, setClaim] = useState<StudentClaim | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,7 +26,7 @@ export function StudentClaimDetailsPage() {
         setIsLoading(false);
       }
     }
-    
+
     if (id) {
       fetchClaim();
     }
@@ -104,7 +104,7 @@ export function StudentClaimDetailsPage() {
           <div>
             <div style={{ background: 'rgba(255,255,255,0.6)', padding: '32px', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '24px' }}>
               <h3 style={{ margin: '0 0 24px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Your Claim</h3>
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '32px' }}>
                 <div>
                   <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px' }}>Item</strong>
@@ -123,7 +123,7 @@ export function StudentClaimDetailsPage() {
                   <span style={{ color: '#594a3a', fontSize: '1.1rem' }}>{dateDisplay}</span>
                 </div>
               </div>
-              
+
               <div>
                 <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '8px' }}>Identifying Details</strong>
                 <p style={{ margin: 0, color: '#594a3a', lineHeight: '1.6', fontSize: '1.05rem' }}>{claim.identifyingDetails || 'No additional details provided.'}</p>
@@ -137,11 +137,11 @@ export function StudentClaimDetailsPage() {
                   {claim.evidence.map((ev) => (
                     ev.evidenceType === 'IMAGE' && ev.objectKey && (
                       <div key={ev.id} style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', background: '#fff', aspectRatio: '4/3' }}>
-                        <img 
-                          src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${ev.objectKey}`} 
-                          alt="Proof of ownership" 
+                        <img
+                          src={uploadUrl(ev.objectKey)}
+                          alt="Proof of ownership"
                           style={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
-                          onClick={() => window.open(`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${ev.objectKey}`, '_blank')}
+                          onClick={() => window.open(uploadUrl(ev.objectKey!), '_blank')}
                         />
                       </div>
                     )
@@ -156,7 +156,7 @@ export function StudentClaimDetailsPage() {
           <div>
             <div style={{ background: 'white', padding: '32px', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
               <h3 style={{ margin: '0 0 24px', color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Claim Status</h3>
-              
+
               <div style={{ marginBottom: '24px' }}>
                 <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '8px' }}>Current State</strong>
                 <span className={`status-badge ${claim.status === 'MORE_INFORMATION_REQUIRED' ? 'status-matched' : claim.status === 'APPROVED' ? 'status-resolved' : claim.status === 'REJECTED' ? 'status-archived' : 'status-open'}`} style={{ fontSize: '1.1rem', padding: '6px 12px' }}>
@@ -167,8 +167,8 @@ export function StudentClaimDetailsPage() {
               <div style={{ marginBottom: '24px' }}>
                 <strong style={{ display: 'block', color: '#a89c92', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '8px' }}>Status Information</strong>
                 <p style={{ margin: 0, color: '#594a3a', lineHeight: '1.6' }}>
-                  {claim.status === 'MORE_INFORMATION_REQUIRED' 
-                    ? 'We need more information to verify your claim. Please read the staff note carefully.' 
+                  {claim.status === 'MORE_INFORMATION_REQUIRED'
+                    ? 'We need more information to verify your claim. Please read the staff note carefully.'
                     : claim.status === 'APPROVED'
                     ? 'This claim has been approved! You can now collect your item from the lost and found office.'
                     : claim.status === 'REJECTED'

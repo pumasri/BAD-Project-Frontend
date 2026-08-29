@@ -54,12 +54,12 @@ export function AdminApiIntegrationsPage() {
         description: newDesc,
         baseUrl: newUrl
       });
-      
+
       setCreatedSecret(response.secret);
       setNewName('');
       setNewDesc('');
       setNewUrl('');
-      
+
       fetchPartners();
     } catch (error) {
       if (error instanceof ApiError) {
@@ -92,9 +92,9 @@ export function AdminApiIntegrationsPage() {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <h2 style={{ fontSize: '1.2rem', color: '#594a3a', margin: 0 }}>Peer API Connections</h2>
-          <button 
-            className="submit-button" 
-            style={{ width: 'auto', margin: 0, padding: '12px 24px' }} 
+          <button
+            className="submit-button"
+            style={{ width: 'auto', margin: 0, padding: '12px 24px' }}
             onClick={() => {
               setCreatedSecret('');
               setCreateError('');
@@ -152,7 +152,7 @@ export function AdminApiIntegrationsPage() {
         {/* Connect Partner Modal */}
         {showCreateModal && (
           <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             background: 'rgba(0,0,0,0.5)', zIndex: 100,
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
@@ -161,49 +161,49 @@ export function AdminApiIntegrationsPage() {
               width: '100%', maxWidth: '450px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
             }}>
               <h2 style={{ margin: '0 0 24px 0', fontSize: '1.5rem', color: '#31281f' }}>Connect Partner Team</h2>
-              
+
               {!createdSecret ? (
                 <form onSubmit={handleCreatePartner}>
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Partner Team Name</label>
-                    <input 
-                      type="text" required 
+                    <input
+                      type="text" required
                       value={newName} onChange={e => setNewName(e.target.value)}
                       placeholder="e.g. Library Services"
-                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} 
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }}
                     />
                   </div>
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Partner API Base URL</label>
-                    <input 
-                      type="url" required 
+                    <input
+                      type="url" required
                       value={newUrl} onChange={e => setNewUrl(e.target.value)}
                       placeholder="https://library.au.edu/api/v1"
-                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} 
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }}
                     />
                   </div>
                   <div style={{ marginBottom: '24px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Description</label>
-                    <textarea 
+                    <textarea
                       value={newDesc} onChange={e => setNewDesc(e.target.value)}
-                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', minHeight: '80px', fontFamily: 'inherit' }} 
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', minHeight: '80px', fontFamily: 'inherit' }}
                     />
                   </div>
-                  
+
                   {createError && (
                     <p style={{ color: '#d93025', marginBottom: '16px', fontSize: '0.9rem' }}>{createError}</p>
                   )}
 
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setShowCreateModal(false)}
                       style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer' }}
                     >
                       Cancel
                     </button>
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={isSubmitting}
                       style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#31281f', color: 'white', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
                     >
@@ -219,16 +219,16 @@ export function AdminApiIntegrationsPage() {
                   <p style={{ fontSize: '0.95rem', color: '#594a3a', marginBottom: '16px' }}>
                     Below is the API secret key generated for this partner. <strong>Copy it now.</strong> It will not be shown again.
                   </p>
-                  <div style={{ 
-                    background: '#f5f5f5', padding: '16px', borderRadius: '8px', 
-                    border: '1px solid #ddd', fontFamily: 'monospace', 
+                  <div style={{
+                    background: '#f5f5f5', padding: '16px', borderRadius: '8px',
+                    border: '1px solid #ddd', fontFamily: 'monospace',
                     wordBreak: 'break-all', marginBottom: '24px', userSelect: 'all'
                   }}>
                     {createdSecret}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setShowCreateModal(false)}
                       style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#31281f', color: 'white', cursor: 'pointer' }}
                     >

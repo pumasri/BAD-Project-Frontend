@@ -61,7 +61,7 @@ export function StaffItemDetailPage({
         <div className="detail-layout">
           <div className="detail-image">
             {item.images && item.images.length > 0 ? (
-              <img src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} alt={item.title} />
+              <img src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`} alt={item.title} />
             ) : (
               <span>{item.category?.name}</span>
             )}
@@ -69,14 +69,14 @@ export function StaffItemDetailPage({
 
           <div className="detail-content">
             <p className="eyebrow">STAFF ITEM MANAGEMENT</p>
-            
+
             <div style={{ marginBottom: '24px' }}>
               <label className="field">
                 <span>Item Name</span>
-                <input 
-                  type="text" 
-                  value={title} 
-                  onChange={(e) => setTitle(e.target.value)} 
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '1.5rem', fontWeight: 'bold' }}
                 />
               </label>
@@ -89,10 +89,10 @@ export function StaffItemDetailPage({
               </div>
               <div>
                 <span>Location</span>
-                <input 
-                  type="text" 
-                  value={location} 
-                  onChange={(e) => setLocation(e.target.value)} 
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
                   style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)' }}
                 />
               </div>
@@ -107,9 +107,9 @@ export function StaffItemDetailPage({
             <div className="detail-description" style={{ marginBottom: '24px' }}>
               <label className="field">
                 <span>Description</span>
-                <textarea 
-                  value={description} 
-                  onChange={(e) => setDescription(e.target.value)} 
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   rows={4}
                   style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontFamily: 'inherit' }}
                 />

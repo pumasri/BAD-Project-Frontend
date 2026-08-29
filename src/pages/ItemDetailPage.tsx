@@ -1,41 +1,30 @@
 import { useState, CSSProperties, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Item, Role } from '../types';
+import type { AuthUser, Item } from '../types';
 import { campusImage, api, ApiError } from '../utils';
 
-export function ItemDetailPage({ items, currentRole }: { items: Item[], currentRole: Role | null }) {
+export function ItemDetailPage({ items, user }: { items: Item[]; user: AuthUser | null }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [showLoginMessage, setShowLoginMessage] = useState(false);
   const [identifyingDetails, setIdentifyingDetails] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [claimMessage, setClaimMessage] = useState('');
-  
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
 
   const item = items.find((i) => i.id.toString() === id);
 
-  const isLoggedIn = !!currentRole;
-  const isStudent = currentRole === 'student';
-
-  const handleBack = () => {
-    if (!isLoggedIn) {
-      navigate('/');
-      return;
-    }
-    if (currentRole === 'student') return navigate('/student-home');
-    if (currentRole === 'staff') return navigate('/staff-dashboard');
-    if (currentRole === 'admin') return navigate('/admin-dashboard');
-    navigate('/');
-  };
+  const isLoggedIn = Boolean(user);
+  const isStudent = user?.role === 'STUDENT';
 
   if (!item) {
     return (
       <main className="page-shell" style={{ '--page-background-image': `url(${campusImage})` } as CSSProperties}>
         <section className="detail-card">
           <h1>Item not found</h1>
-          <button type="button" className="detail-back-button" onClick={handleBack}>← Back to Lost &amp; Found</button>
+          <button type="button" className="detail-back-button" onClick={() => navigate('/')}>← Back to Lost &amp; Found</button>
         </section>
       </main>
     );
@@ -64,23 +53,7 @@ export function ItemDetailPage({ items, currentRole }: { items: Item[], currentR
         const formData = new FormData();
         formData.append('image', selectedFile);
 
-        const token = localStorage.getItem('token');
-        const apiUrl = ((import.meta as any).env.VITE_API_URL || 'http://localhost:5050') + '/api';
-        
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const uploadRes = await fetch(`${apiUrl}/claims/${response.id}/evidence`, {
-          method: 'POST',
-          headers,
-          body: formData
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error('Proof image upload failed.');
-        }
+        await api.postForm(`/claims/${response.id}/evidence`, formData);
       }
 
       setClaimMessage('Claim request submitted successfully! Staff will review it shortly.');
@@ -111,7 +84,7 @@ export function ItemDetailPage({ items, currentRole }: { items: Item[], currentR
         <button
           type="button"
           className="detail-back-button"
-          onClick={handleBack}
+          onClick={() => navigate(isLoggedIn ? '/student-home' : '/')}
         >
           ← Back to Lost &amp; Found
         </button>
@@ -119,7 +92,7 @@ export function ItemDetailPage({ items, currentRole }: { items: Item[], currentR
         <div className="detail-layout">
           <div className="detail-image">
             {item.images && item.images.length > 0 ? (
-              <img src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} alt={item.title} />
+              <img src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`} alt={item.title} />
             ) : (
               <span>{item.category?.name}</span>
             )}
@@ -204,11 +177,11 @@ export function ItemDetailPage({ items, currentRole }: { items: Item[], currentR
                   {isSubmitting ? 'Submitting Claim...' : 'Submit Claim Request'}
                 </button>
                 {claimMessage && (
-                  <p style={{ 
-                    marginTop: '8px', 
-                    color: claimMessage.includes('successfully') ? '#2b7a78' : '#d93025', 
-                    fontWeight: 'bold', 
-                    fontSize: '0.95rem' 
+                  <p style={{
+                    marginTop: '8px',
+                    color: claimMessage.includes('successfully') ? '#2b7a78' : '#d93025',
+                    fontWeight: 'bold',
+                    fontSize: '0.95rem'
                   }}>
                     {claimMessage}
                   </p>

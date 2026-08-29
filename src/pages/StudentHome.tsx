@@ -62,7 +62,13 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
             </p>
           </div>
 
-          <LogoutButton onLogout={onLogout} />
+          <button
+            type="button"
+            className="dashboard-logout"
+            onClick={onLogout}
+          >
+            Log out
+          </button>
         </header>
 
         {/* Quick Actions */}
@@ -187,9 +193,9 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
               >
                 <div className="student-claim-icon" style={{ borderRadius: '50%', overflow: 'hidden' }}>
                   {claim.foundReport?.images && claim.foundReport.images.length > 0 ? (
-                    <img 
-                      src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${claim.foundReport.images[0].objectKey}`} 
-                      alt={claim.foundReport.title} 
+                    <img
+                      src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${claim.foundReport.images[0].objectKey}`}
+                      alt={claim.foundReport.title}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   ) : (
@@ -240,9 +246,9 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                 <div key={item.id} className="student-claim-card" style={{ cursor: 'default', background: 'rgba(255, 255, 255, 0.5)' }}>
                   <div className="student-claim-icon" style={{ borderRadius: '12px', overflow: 'hidden', background: 'rgba(217, 48, 37, 0.1)', color: '#d93025' }}>
                     {item.images && item.images.length > 0 ? (
-                      <img 
-                        src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} 
-                        alt={item.title} 
+                      <img
+                        src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`}
+                        alt={item.title}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     ) : (
@@ -264,6 +270,13 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                     <span className="status-badge status-review">
                       {formatStatus(item.status)}
                     </span>
+                    <button
+                      type="button"
+                      className="student-section-link"
+                      onClick={() => navigate(`/student/lost-reports/${item.id}/matches`)}
+                    >
+                      Suggested Matches →
+                    </button>
                   </div>
                 </div>
               ))
@@ -300,9 +313,9 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
               >
                 <div className="student-mini-item-image">
                   {item.images && item.images.length > 0 ? (
-                    <img 
-                      src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} 
-                      alt={item.title} 
+                    <img
+                      src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`}
+                      alt={item.title}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     />
                   ) : (

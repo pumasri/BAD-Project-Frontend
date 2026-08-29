@@ -50,9 +50,9 @@ export function StudentClaimsPage({ claims }: { claims: StudentClaim[] }) {
               >
                 <div style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', overflow: 'hidden', background: 'rgba(163, 93, 63, 0.1)', color: '#a35d3f', fontWeight: 'bold' }}>
                   {claim.foundReport?.images && claim.foundReport.images.length > 0 ? (
-                    <img 
-                      src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${claim.foundReport.images[0].objectKey}`} 
-                      alt={claim.foundReport.title} 
+                    <img
+                      src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${claim.foundReport.images[0].objectKey}`}
+                      alt={claim.foundReport.title}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   ) : (

@@ -88,6 +88,16 @@ export function StaffDashboard({
             <p>Review items reported lost by students.</p>
           </button>
 
+          <button
+            type="button"
+            className="dashboard-action-card"
+            onClick={() => navigate('/staff/matches')}
+          >
+            <span className="dashboard-icon">≈</span>
+            <strong>AI Match Review</strong>
+            <p>Review, confirm, or reject suggested item matches.</p>
+          </button>
+
         </div>
 
         <div className="staff-recent-section">
@@ -104,7 +114,7 @@ export function StaffDashboard({
                 <div key={item.id} className="staff-recent-item">
                   <div className="staff-recent-image">
                     {item.images && item.images.length > 0 ? (
-                      <img src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} alt={item.title} />
+                      <img src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`} alt={item.title} />
                     ) : (
                       <span>{item.category?.name}</span>
                     )}

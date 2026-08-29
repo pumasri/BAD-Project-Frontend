@@ -19,7 +19,7 @@ export function AdminAuditLogsPage() {
   const navigate = useNavigate();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Filtering state
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState('ALL');
@@ -119,15 +119,15 @@ export function AdminAuditLogsPage() {
             <span style={{ padding: '10px 16px', color: '#918477', display: 'flex', alignItems: 'center' }}>
               🔍
             </span>
-            <input 
-              type="text" 
-              placeholder="Search logs by user, entity, or details..." 
-              style={{ width: '100%', padding: '10px 16px 10px 0', border: 'none', outline: 'none', background: 'transparent' }} 
+            <input
+              type="text"
+              placeholder="Search logs by user, entity, or details..."
+              style={{ width: '100%', padding: '10px 16px 10px 0', border: 'none', outline: 'none', background: 'transparent' }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <select 
+          <select
             style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', background: 'white', outline: 'none', color: '#594a3a', minWidth: '180px' }}
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
@@ -215,8 +215,8 @@ export function AdminAuditLogsPage() {
                                   {formattedKey}
                                 </span>
                                 {isBoolean ? (
-                                  <span className="status-badge" style={{ 
-                                    background: value ? 'rgba(83, 132, 91, 0.12)' : 'rgba(120, 109, 98, 0.1)', 
+                                  <span className="status-badge" style={{
+                                    background: value ? 'rgba(83, 132, 91, 0.12)' : 'rgba(120, 109, 98, 0.1)',
                                     color: value ? '#4f7e56' : '#766c63',
                                     fontSize: '0.75rem',
                                     fontWeight: 'bold',

@@ -51,11 +51,11 @@ export function AdminCategoriesPage() {
         name: newName,
         description: newDesc
       });
-      
+
       setNewName('');
       setNewDesc('');
       setShowCreateModal(false);
-      
+
       fetchCategories();
     } catch (error) {
       if (error instanceof ApiError) {
@@ -150,16 +150,16 @@ export function AdminCategoriesPage() {
             <span style={{ padding: '10px 16px', color: '#918477', display: 'flex', alignItems: 'center' }}>
               🔍
             </span>
-            <input 
-              type="text" 
-              placeholder="Search categories by name or description..." 
-              style={{ width: '100%', padding: '10px 16px 10px 0', border: 'none', outline: 'none', background: 'transparent' }} 
+            <input
+              type="text"
+              placeholder="Search categories by name or description..."
+              style={{ width: '100%', padding: '10px 16px 10px 0', border: 'none', outline: 'none', background: 'transparent' }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <select 
-            className="staff-status-filter" 
+          <select
+            className="staff-status-filter"
             style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', background: 'white', outline: 'none', color: '#594a3a', minWidth: '150px' }}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -207,7 +207,7 @@ export function AdminCategoriesPage() {
                     </span>
                   </td>
                   <td>
-                    <button 
+                    <button
                       className="action-btn"
                       style={{
                         background: 'transparent',
@@ -240,7 +240,7 @@ export function AdminCategoriesPage() {
         {/* Create Category Modal */}
         {showCreateModal && (
           <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             background: 'rgba(0, 0, 0, 0.15)', zIndex: 100,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             backdropFilter: 'blur(2px)'
@@ -254,33 +254,33 @@ export function AdminCategoriesPage() {
               <form onSubmit={handleCreateCategory} className="login-form">
                 <div className="field">
                   <span>Category Name</span>
-                  <input 
-                    type="text" required 
+                  <input
+                    type="text" required
                     value={newName} onChange={e => setNewName(e.target.value)}
                   />
                 </div>
                 <div className="field">
                   <span>Description</span>
-                  <textarea 
+                  <textarea
                     value={newDesc} onChange={e => setNewDesc(e.target.value)}
                   />
                 </div>
-                
+
                 {createError && (
                   <p className="form-status" style={{ margin: '0 0 16px 0' }}>{createError}</p>
                 )}
 
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowCreateModal(false)}
                     className="view-item-button"
                     style={{ width: 'auto' }}
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isSubmitting}
                     className="submit-button"
                     style={{ width: 'auto' }}

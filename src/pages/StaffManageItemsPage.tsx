@@ -93,7 +93,7 @@ export function StaffManageItemsPage({ items }: { items: Item[] }) {
               <article key={item.id} className="staff-item-row">
                 <div className="staff-item-thumbnail">
                   {item.images && item.images.length > 0 ? (
-                    <img src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${item.images[0].objectKey}`} alt={item.title} />
+                    <img src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`} alt={item.title} />
                   ) : (
                     <span>{item.category?.name}</span>
                   )}

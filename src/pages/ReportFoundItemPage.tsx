@@ -58,28 +58,12 @@ export function ReportFoundItemPage({
         const formData = new FormData();
         formData.append('image', selectedFile);
 
-        const token = localStorage.getItem('token');
-        const apiUrl = ((import.meta as any).env.VITE_API_URL || 'http://localhost:5050') + '/api';
-        
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const uploadRes = await fetch(`${apiUrl}/items/${response.id}/images`, {
-          method: 'POST',
-          headers,
-          body: formData
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error('Image upload failed.');
-        }
+        await api.postForm(`/items/${response.id}/images`, formData);
       }
 
       // Refetch items in global state
       onItemReported();
-      
+
       setMessage('Found item reported successfully!');
       setTimeout(() => {
         navigate('/staff-dashboard');

@@ -6,7 +6,7 @@ import type { StudentClaim } from '../types';
 export function StaffClaimDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  
+
   const [claim, setClaim] = useState<StudentClaim | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,7 +33,7 @@ export function StaffClaimDetailsPage() {
         setIsLoading(false);
       }
     }
-    
+
     if (id) {
       fetchClaim();
     }
@@ -47,22 +47,22 @@ export function StaffClaimDetailsPage() {
 
   async function submitReview() {
     if (!claim) return;
-    
+
     setIsUpdating(true);
     setUiMessage('');
     setIsModalOpen(false);
-    
+
     try {
       await api.patch(`/claims/${claim.id}/review`, {
         status: reviewStatus,
         reviewNote: reviewNote
       });
-      
+
       const data = await api.get(`/claims/${claim.id}`);
       setClaim(data);
       setUiMessage(`Claim successfully ${reviewStatus.toLowerCase().replace(/_/g, ' ')}!`);
       setTimeout(() => setUiMessage(''), 4000);
-    } catch (err) {
+    } catch {
       setUiMessage('Failed to update claim.');
       setTimeout(() => setUiMessage(''), 4000);
     } finally {
@@ -148,7 +148,7 @@ export function StaffClaimDetailsPage() {
         <div style={{ background: 'rgba(87, 120, 157, 0.05)', padding: '32px', borderRadius: '24px', border: '1px solid rgba(87, 120, 157, 0.15)', marginBottom: '24px' }}>
           <h3 style={{ margin: '0 0 24px', color: '#52739a', fontSize: '1rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Identifying Details Provided</h3>
           <p style={{ margin: 0, color: '#594a3a', lineHeight: '1.6' }}>{claim.identifyingDetails}</p>
-          
+
           {claim.evidence && claim.evidence.length > 0 && (
             <div style={{ marginTop: '24px' }}>
               <h4 style={{ margin: '0 0 12px', color: '#52739a', fontSize: '0.9rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Evidence Attachments</h4>
@@ -156,9 +156,9 @@ export function StaffClaimDetailsPage() {
                 {claim.evidence.map((ev) => (
                   ev.evidenceType === 'IMAGE' && ev.objectKey && (
                     <div key={ev.id} style={{ maxWidth: '300px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)' }}>
-                      <img 
-                        src={`${(import.meta as any).env.VITE_API_URL || 'http://localhost:5050'}/uploads/${ev.objectKey}`} 
-                        alt="Proof of ownership" 
+                      <img
+                        src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${ev.objectKey}`}
+                        alt="Proof of ownership"
                         style={{ width: '100%', height: 'auto', display: 'block' }}
                       />
                     </div>
@@ -167,7 +167,7 @@ export function StaffClaimDetailsPage() {
               </div>
             </div>
           )}
-          
+
           {claim.reviewNote && (
             <div style={{ marginTop: '24px', padding: '16px', background: '#fff', borderRadius: '12px' }}>
               <h4 style={{ margin: '0 0 8px', color: '#594a3a' }}>Previous Review Note</h4>
@@ -178,12 +178,12 @@ export function StaffClaimDetailsPage() {
 
         {/* Global Action Notifications */}
         {uiMessage && (
-          <div style={{ 
-            padding: '16px', 
-            borderRadius: '12px', 
-            background: uiMessage.includes('successfully') ? '#e6f4ea' : '#fce8e6', 
+          <div style={{
+            padding: '16px',
+            borderRadius: '12px',
+            background: uiMessage.includes('successfully') ? '#e6f4ea' : '#fce8e6',
             color: uiMessage.includes('successfully') ? '#137333' : '#c5221f',
-            fontWeight: 'bold', 
+            fontWeight: 'bold',
             marginBottom: '24px',
             textAlign: 'center'
           }}>
@@ -237,7 +237,7 @@ export function StaffClaimDetailsPage() {
             <div style={{ borderBottom: '1px solid rgba(0,0,0,0.06)', paddingBottom: '16px' }}>
               <h2 style={{ margin: 0, color: '#594a3a', fontSize: '1.5rem' }}>{getActionTitle()}</h2>
               <p style={{ margin: '8px 0 0', color: '#918477', fontSize: '0.9rem' }}>
-                {reviewStatus === 'MORE_INFORMATION_REQUIRED' 
+                {reviewStatus === 'MORE_INFORMATION_REQUIRED'
                   ? 'Tell the student what details or evidence they need to provide next.'
                   : 'Add a note to explain this decision to the student (optional).'}
               </p>
@@ -256,17 +256,17 @@ export function StaffClaimDetailsPage() {
             </div>
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button 
-                type="button" 
-                className="secondary-button" 
+              <button
+                type="button"
+                className="secondary-button"
                 onClick={() => setIsModalOpen(false)}
                 style={{ margin: 0, padding: '10px 20px' }}
               >
                 Cancel
               </button>
-              <button 
-                type="button" 
-                className="submit-button" 
+              <button
+                type="button"
+                className="submit-button"
                 onClick={submitReview}
                 disabled={reviewStatus === 'MORE_INFORMATION_REQUIRED' && !reviewNote.trim()}
                 style={{ margin: 0, padding: '10px 20px', width: 'auto' }}

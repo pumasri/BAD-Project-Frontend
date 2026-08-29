@@ -22,10 +22,10 @@ export function StudentReportLostItemPage({
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
     const formData = new FormData(e.target as HTMLFormElement);
     const imageFile = formData.get('image') as File;
-    
+
     try {
       const response = await api.post('/items', {
         title: formData.get('itemName') as string,
@@ -38,23 +38,15 @@ export function StudentReportLostItemPage({
         reportType: 'LOST',
         isPublic: true,
       });
-      
+
       const itemId = response.id;
-      
+
       if (imageFile && imageFile.size > 0) {
         const imgData = new FormData();
         imgData.append('image', imageFile);
-        const token = localStorage.getItem('token');
-        const apiUrl = ((import.meta as any).env.VITE_API_URL || 'http://localhost:5050') + '/api';
-        await fetch(`${apiUrl}/items/${itemId}/images`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: imgData
-        });
+        await api.postForm(`/items/${itemId}/images`, imgData);
       }
-      
+
       onItemReported();
       setIsSubmitted(true);
     } catch (err) {
@@ -205,7 +197,7 @@ export function StudentReportLostItemPage({
               />
             </div>
           )}
-          
+
           {error && <p className="form-status" style={{ color: '#d93025' }}>{error}</p>}
 
           <div className="form-row" style={{ marginTop: '16px' }}>

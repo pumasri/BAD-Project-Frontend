@@ -42,7 +42,7 @@ export function AIChatbot() {
 
     try {
       const response = await api.post('/chat', { message: userText });
-      
+
       setMessages((prev) => [
         ...prev,
         { text: response.text, isUser: false, id: (Date.now() + 1).toString() },
@@ -84,7 +84,7 @@ export function AIChatbot() {
               <X size={20} />
             </button>
           </div>
-          
+
           <div className="chatbot-messages">
             {messages.map((msg) => (
               <div
