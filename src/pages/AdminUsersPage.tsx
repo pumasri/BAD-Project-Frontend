@@ -14,17 +14,11 @@ export function AdminUsersPage() {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-
   // Filtering state
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
 
-  // New staff form state
-  const [newName, setNewName] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [createError, setCreateError] = useState('');
+
 
   useEffect(() => {
     fetchUsers();
@@ -42,31 +36,19 @@ export function AdminUsersPage() {
     }
   }
 
-  async function handleCreateStaff(e: FormEvent) {
-    e.preventDefault();
-    setCreateError('');
-    setIsSubmitting(true);
-
+  async function changeUserRole(userId: string, oldRole: string, newRole: string) {
+    if (!window.confirm(`Change role from ${oldRole} to ${newRole}?`)) {
+      return;
+    }
     try {
-      await api.post('/admin/users', {
-        name: newName,
-        email: newEmail,
-        roleName: 'STAFF'
-      });
-
-      setNewName('');
-      setNewEmail('');
-      setShowCreateModal(false);
-
+      await api.patch(`/admin/users/${userId}/role`, { roleName: newRole });
       fetchUsers();
     } catch (error) {
       if (error instanceof ApiError) {
-        setCreateError(error.message);
+        alert(error.message);
       } else {
-        setCreateError('An unexpected error occurred while creating the account.');
+        alert('Failed to update user role.');
       }
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -83,6 +65,8 @@ export function AdminUsersPage() {
     }
   }
 
+
+
   const filteredUsers = users.filter(u => {
     const matchSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         u.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -93,29 +77,18 @@ export function AdminUsersPage() {
   return (
     <main className="page-shell">
       <section className="dashboard-card" style={{ position: 'relative' }}>
-        <div className="dashboard-header">
+        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
+          ← Back to Dashboard
+        </button>
+
+        {/* Header */}
+        <div className="dashboard-header" style={{ alignItems: 'flex-start' }}>
           <div>
             <p className="eyebrow">ADMIN PORTAL</p>
             <h1>User Management</h1>
             <p>Manage system access, roles, and user accounts.</p>
           </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button
-              type="button"
-              className="submit-button"
-              style={{ width: 'auto', padding: '12px 24px', margin: 0 }}
-              onClick={() => setShowCreateModal(true)}
-            >
-              + Create Staff
-            </button>
-            <button
-              type="button"
-              className="dashboard-logout"
-              onClick={() => navigate('/admin-dashboard')}
-            >
-              Back to Dashboard
-            </button>
-          </div>
+
         </div>
 
         {/* Summary Stats */}
@@ -205,7 +178,15 @@ export function AdminUsersPage() {
                     </a>
                   </td>
                   <td>
-                    <span className="status-badge role-badge">{user.role}</span>
+                    <select
+                      className="role-select-dropdown"
+                      value={user.role}
+                      onChange={(e) => changeUserRole(user.id, user.role, e.target.value)}
+                    >
+                      <option value="STUDENT">STUDENT</option>
+                      <option value="STAFF">STAFF</option>
+                      <option value="ADMIN">ADMIN</option>
+                    </select>
                   </td>
                   <td>
                     <span className={`status-badge ${user.isActive ? 'status-resolved' : 'status-archived'}`}>
@@ -236,6 +217,7 @@ export function AdminUsersPage() {
                     >
                       {user.isActive ? 'Deactivate' : 'Activate'}
                     </button>
+
                   </td>
                 </tr>
               ))}
@@ -243,65 +225,7 @@ export function AdminUsersPage() {
           </table>
         </div>
 
-        {/* Create Staff Modal */}
-        {showCreateModal && (
-          <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0, 0, 0, 0.15)', zIndex: 100,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backdropFilter: 'blur(2px)'
-          }}>
-            <div style={{
-              background: 'rgba(255, 250, 242, 0.95)', padding: '32px', borderRadius: '24px',
-              width: '100%', maxWidth: '400px', boxShadow: '0 24px 60px rgba(69, 55, 37, 0.15)',
-              border: '1px solid rgba(93, 82, 64, 0.1)'
-            }}>
-              <h2 style={{ margin: '0 0 24px 0', fontSize: '1.5rem', color: '#594a3a' }}>Create Staff Account</h2>
-              <form onSubmit={handleCreateStaff} className="login-form">
-                <div className="field">
-                  <span>Full Name</span>
-                  <input
-                    type="text" required
-                    value={newName} onChange={e => setNewName(e.target.value)}
-                  />
-                </div>
-                <div className="field">
-                  <span>Email Address</span>
-                  <input
-                    type="email" required
-                    value={newEmail} onChange={e => setNewEmail(e.target.value)}
-                  />
-                </div>
-                <p style={{ marginBottom: '24px', color: '#786b5c', lineHeight: 1.5 }}>
-                  The staff member will sign in with this AU Microsoft account. No password is created here.
-                </p>
 
-                {createError && (
-                  <p className="form-status" style={{ margin: '0 0 16px 0' }}>{createError}</p>
-                )}
-
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="view-item-button"
-                    style={{ width: 'auto' }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="submit-button"
-                    style={{ width: 'auto' }}
-                  >
-                    {isSubmitting ? 'Creating...' : 'Create Staff'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </section>
     </main>
   );

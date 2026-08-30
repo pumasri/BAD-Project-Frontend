@@ -74,20 +74,17 @@ export function AdminApiIntegrationsPage() {
 
   return (
     <main className="page-shell">
-      <section className="dashboard-card" style={{ maxWidth: '1000px', position: 'relative' }}>
-        <div className="dashboard-header">
+      <section className="dashboard-card" style={{ position: 'relative' }}>
+        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
+          ← Back to Dashboard
+        </button>
+
+        <div className="dashboard-header" style={{ alignItems: 'flex-start' }}>
           <div>
             <p className="eyebrow">ADMIN PORTAL</p>
             <h1>API Integrations</h1>
             <p>Manage x-api-key authentication and connections for Partner Teams.</p>
           </div>
-          <button
-            type="button"
-            className="dashboard-logout"
-            onClick={() => navigate('/admin-dashboard')}
-          >
-            Back to Dashboard
-          </button>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>

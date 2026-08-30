@@ -93,11 +93,16 @@ export function AdminCategoriesPage() {
   return (
     <main className="page-shell">
       <section className="dashboard-card" style={{ position: 'relative' }}>
-        <div className="dashboard-header">
+        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
+          ← Back to Dashboard
+        </button>
+
+        {/* Header */}
+        <div className="dashboard-header" style={{ alignItems: 'flex-start' }}>
           <div>
             <p className="eyebrow">ADMIN PORTAL</p>
             <h1>Categories</h1>
-            <p>Manage the categories used for reporting lost and found items.</p>
+            <p>Manage item categories for lost and found reports.</p>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
@@ -107,13 +112,6 @@ export function AdminCategoriesPage() {
               onClick={() => setShowCreateModal(true)}
             >
               + Add Category
-            </button>
-            <button
-              type="button"
-              className="dashboard-logout"
-              onClick={() => navigate('/admin-dashboard')}
-            >
-              Back to Dashboard
             </button>
           </div>
         </div>

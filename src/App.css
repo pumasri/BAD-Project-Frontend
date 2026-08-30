@@ -2089,6 +2089,10 @@ body {
   gap: 16px;
 }
 
+.student-claim-status .action-arrow {
+  position: static;
+}
+
 .status-badge {
   padding: 7px 10px;
 
@@ -2918,5 +2922,141 @@ body {
   color: #a35d3f;
 }
 
-.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.status-badge.role-badge { background: rgba(0, 0, 0, 0.05); color: #594a3a; }
+.action-btn.danger {
+  color: #d93025;
+}
+
+.action-btn.danger:hover:not(:disabled) {
+  background: rgba(217, 48, 37, 0.1);
+  border-color: rgba(217, 48, 37, 0.3);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status-badge.role-badge {
+  background: rgba(0, 0, 0, 0.05);
+  color: #594a3a;
+}
+
+/* ---
+   PROFILE DROPDOWN IN HEADER
+--- */
+.student-profile-dropdown-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.student-profile-avatar-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(163, 93, 63, 0.1);
+  color: #a35d3f;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: 1px solid rgba(163, 93, 63, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.student-profile-avatar-btn:hover {
+  background: rgba(163, 93, 63, 0.2);
+  transform: scale(1.05);
+}
+
+.student-profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(93, 82, 64, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(93, 82, 64, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  min-width: 260px;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.student-profile-dropdown .student-profile-info {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.student-profile-dropdown .student-profile-info h2 {
+  font-size: 1.25rem;
+  color: #31281f;
+  margin: 0 0 2px 0;
+}
+
+.student-profile-dropdown .student-profile-info p:not(.eyebrow) {
+  font-size: 0.9rem;
+  color: #918477;
+  margin: 0;
+}
+
+.student-profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.student-profile-actions .secondary-button,
+.student-profile-actions .dropdown-logout {
+  width: 100%;
+  text-align: center;
+  padding: 10px 16px;
+  justify-content: center;
+  display: flex;
+}
+
+.student-profile-actions .dropdown-logout {
+  border: 1px solid rgba(217, 48, 37, 0.2);
+  background: rgba(217, 48, 37, 0.05);
+  color: #d93025;
+}
+
+.student-profile-actions .dropdown-logout:hover {
+  background: rgba(217, 48, 37, 0.1);
+}
+
+.role-select-dropdown {
+  appearance: none;
+  background-color: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 20px;
+  color: #594a3a;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  outline: none;
+  padding: 8px 32px 8px 16px;
+  transition: all 0.2s ease;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23594a3a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 10px auto;
+}
+
+.role-select-dropdown:hover, .role-select-dropdown:focus {
+  background-color: rgba(163, 93, 63, 0.08);
+  border-color: rgba(163, 93, 63, 0.25);
+  color: #a35d3f;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a35d3f%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+}
