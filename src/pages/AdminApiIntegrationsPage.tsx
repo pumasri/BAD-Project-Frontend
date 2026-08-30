@@ -10,6 +10,14 @@ interface Partner {
   apiKeyIdentifier: string;
   isActive: boolean;
   createdAt: string;
+  syncedItemCount: number;
+  lastSync: {
+    createdAt: string;
+    receivedCount: number;
+    createdCount: number;
+    updatedCount: number;
+    deactivatedCount: number;
+  } | null;
 }
 
 export function AdminApiIntegrationsPage() {
@@ -111,15 +119,16 @@ export function AdminApiIntegrationsPage() {
               <tr>
                 <th style={{ padding: '16px', color: '#594a3a', fontSize: '0.9rem' }}>Partner Team</th>
                 <th style={{ padding: '16px', color: '#594a3a', fontSize: '0.9rem' }}>Status</th>
+                <th style={{ padding: '16px', color: '#594a3a', fontSize: '0.9rem' }}>Sync activity</th>
                 <th style={{ padding: '16px', color: '#594a3a', fontSize: '0.9rem' }}>Configuration</th>
                 <th style={{ padding: '16px', color: '#594a3a', fontSize: '0.9rem' }}>Identifier</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={4} style={{ padding: '24px', textAlign: 'center' }}>Loading connections...</td></tr>
+                <tr><td colSpan={5} style={{ padding: '24px', textAlign: 'center' }}>Loading connections...</td></tr>
               ) : partners.length === 0 ? (
-                <tr><td colSpan={4} style={{ padding: '24px', textAlign: 'center' }}>No integrations configured.</td></tr>
+                <tr><td colSpan={5} style={{ padding: '24px', textAlign: 'center' }}>No integrations configured.</td></tr>
               ) : partners.map(conn => (
                 <tr key={conn.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                   <td style={{ padding: '16px', fontWeight: 'bold', color: '#594a3a' }}>
@@ -131,6 +140,15 @@ export function AdminApiIntegrationsPage() {
                     <span className={`status-badge ${conn.isActive ? 'status-resolved' : 'status-open'}`}>
                       {conn.isActive ? 'Active' : 'Inactive'}
                     </span>
+                  </td>
+                  <td style={{ padding: '16px', fontSize: '0.85rem', color: '#594a3a' }}>
+                    <strong>{conn.syncedItemCount}</strong> stored item{conn.syncedItemCount === 1 ? '' : 's'}
+                    <br />
+                    <small style={{ color: '#918477' }}>
+                      {conn.lastSync
+                        ? `Last sync: ${new Date(conn.lastSync.createdAt).toLocaleString()}`
+                        : 'No sync received yet'}
+                    </small>
                   </td>
                   <td style={{ padding: '16px' }}>
                     <div style={{ fontSize: '0.85rem', marginBottom: '4px' }}>
