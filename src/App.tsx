@@ -31,6 +31,7 @@ import { AdminApiIntegrationsPage } from './pages/AdminApiIntegrationsPage';
 import { AdminProfilePage } from './pages/AdminProfilePage';
 import { MatchReviewPage } from './pages/MatchReviewPage';
 import { AIChatbot } from './components/AIChatbot';
+import { DevRoleSwitcher } from './components/DevRoleSwitcher';
 
 import './App.css';
 
@@ -236,6 +237,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {user?.role === 'STUDENT' && <AIChatbot />}
+      {user && <DevRoleSwitcher />}
     </>
   );
 }

@@ -14,6 +14,12 @@ export function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+  const [editError, setEditError] = useState('');
 
   // Filtering state
   const [searchTerm, setSearchTerm] = useState('');
@@ -65,6 +71,30 @@ export function AdminCategoriesPage() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleEditCategory(e: FormEvent) {
+    e.preventDefault();
+    if (!editingCategory) return;
+    setEditError('');
+    setIsEditSubmitting(true);
+    try {
+      await api.patch(`/admin/categories/${editingCategory.id}`, {
+        name: editName,
+        description: editDesc
+      });
+      setShowEditModal(false);
+      setEditingCategory(null);
+      fetchCategories();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setEditError(error.message);
+      } else {
+        setEditError('An unexpected error occurred while editing the category.');
+      }
+    } finally {
+      setIsEditSubmitting(false);
     }
   }
 
@@ -228,6 +258,31 @@ export function AdminCategoriesPage() {
                     >
                       {cat.isActive ? 'Deactivate' : 'Activate'}
                     </button>
+                    <button
+                      className="action-btn"
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid rgba(89, 74, 58, 0.3)',
+                        color: '#594a3a',
+                        padding: '6px 16px',
+                        borderRadius: '20px',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 'bold',
+                        transition: 'all 0.2s ease',
+                        marginLeft: '8px'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'rgba(89, 74, 58, 0.05)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setEditingCategory(cat);
+                        setEditName(cat.name);
+                        setEditDesc(cat.description || '');
+                        setShowEditModal(true);
+                      }}
+                    >
+                      Edit
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -284,6 +339,65 @@ export function AdminCategoriesPage() {
                     style={{ width: 'auto' }}
                   >
                     {isSubmitting ? 'Adding...' : 'Add Category'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Category Modal */}
+        {showEditModal && editingCategory && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0, 0, 0, 0.15)', zIndex: 100,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(2px)'
+          }}>
+            <div style={{
+              background: 'rgba(255, 250, 242, 0.95)', padding: '32px', borderRadius: '24px',
+              width: '100%', maxWidth: '400px', boxShadow: '0 24px 60px rgba(69, 55, 37, 0.15)',
+              border: '1px solid rgba(93, 82, 64, 0.1)'
+            }}>
+              <h2 style={{ margin: '0 0 24px 0', fontSize: '1.5rem', color: '#594a3a' }}>Edit Category</h2>
+              <form onSubmit={handleEditCategory} className="login-form">
+                <div className="field">
+                  <span>Category Name</span>
+                  <input
+                    type="text" required
+                    value={editName} onChange={e => setEditName(e.target.value)}
+                  />
+                </div>
+                <div className="field">
+                  <span>Description</span>
+                  <textarea
+                    value={editDesc} onChange={e => setEditDesc(e.target.value)}
+                  />
+                </div>
+
+                {editError && (
+                  <p className="form-status" style={{ margin: '0 0 16px 0' }}>{editError}</p>
+                )}
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setEditingCategory(null);
+                    }}
+                    className="view-item-button"
+                    style={{ width: 'auto' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isEditSubmitting}
+                    className="submit-button"
+                    style={{ width: 'auto' }}
+                  >
+                    {isEditSubmitting ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               </form>
