@@ -6,10 +6,10 @@ import { clearAuth, getCurrentUser, logoutSession } from './services/authService
 import { api } from './utils';
 
 import { HomePage } from './pages/HomePage';
+import { FoundItemsPage } from './pages/FoundItemsPage';
 import { ItemDetailPage } from './pages/ItemDetailPage';
 import { LoginPage } from './pages/LoginPage';
 import { StudentHome } from './pages/StudentHome';
-import { StudentFindItemPage } from './pages/StudentFindItemPage';
 import { StudentReportLostItemPage } from './pages/StudentReportLostItemPage';
 import { StudentClaimsPage } from './pages/StudentClaimsPage';
 import { StudentClaimDetailsPage } from './pages/StudentClaimDetailsPage';
@@ -140,21 +140,19 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<HomePage items={items} />} />
+        <Route path="/browse-items" element={<FoundItemsPage items={items} />} />
         <Route path="/item/:id" element={<ItemDetailPage items={items} user={user} />} />
         <Route
           path="/login"
           element={<LoginPage onLogin={finishLogin} authenticationError={authenticationError} />}
         />
-        <Route path="/student-login" element={<Navigate to="/login" replace />} />
-        <Route path="/staff-login" element={<Navigate to="/login" replace />} />
-        <Route path="/admin-login" element={<Navigate to="/login" replace />} />
         <Route
           path="/student-home"
           element={guard('STUDENT', <StudentHome onLogout={logout} claims={studentClaims} items={items} />)}
         />
         <Route
           path="/student-find-item"
-          element={guard('STUDENT', <StudentFindItemPage items={items} />)}
+          element={guard('STUDENT', <FoundItemsPage items={items} />)}
         />
         <Route
           path="/student-report-lost"
@@ -179,7 +177,7 @@ function App() {
 
         <Route
           path="/staff-dashboard"
-          element={guard('STAFF', <StaffDashboard items={items} onLogout={logout} />)}
+          element={guard('STAFF', <StaffDashboard items={items} />)}
         />
         <Route
           path="/staff/items"
@@ -216,7 +214,7 @@ function App() {
 
         <Route
           path="/admin-dashboard"
-          element={guard('ADMIN', <AdminDashboard onLogout={logout} />)}
+          element={guard('ADMIN', <AdminDashboard items={items} />)}
         />
         <Route path="/admin-users" element={guard('ADMIN', <AdminUsersPage />)} />
         <Route path="/admin-categories" element={guard('ADMIN', <AdminCategoriesPage />)} />

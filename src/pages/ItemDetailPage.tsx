@@ -1,7 +1,9 @@
 import { useState, CSSProperties, FormEvent } from 'react';
+import { CalendarDays, CheckCircle2, MapPin, PackageSearch, ShieldCheck, Tag } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { FileUpload } from '../components/FileUpload';
 import type { AuthUser, Item } from '../types';
-import { campusImage, api, ApiError } from '../utils';
+import { campusImage, api, ApiError, formatStatus, uploadUrl } from '../utils';
 
 export function ItemDetailPage({ items, user }: { items: Item[]; user: AuthUser | null }) {
   const navigate = useNavigate();
@@ -21,14 +23,16 @@ export function ItemDetailPage({ items, user }: { items: Item[]; user: AuthUser 
 
   if (!item) {
     return (
-      <main className="page-shell" style={{ '--page-background-image': `url(${campusImage})` } as CSSProperties}>
+      <main className="page-shell public-detail-shell" style={{ '--page-background-image': `url(${campusImage})` } as CSSProperties}>
         <section className="detail-card">
           <h1>Item not found</h1>
-          <button type="button" className="detail-back-button" onClick={() => navigate('/')}>← Back to Lost &amp; Found</button>
+          <button type="button" className="detail-back-button" onClick={() => navigate('/browse-items')}>‹ Back</button>
         </section>
       </main>
     );
   }
+
+  const showsClaimRequestForm = item.status !== 'RESOLVED' && isLoggedIn && isStudent;
 
   async function handleClaimSubmit(e: FormEvent) {
     e.preventDefault();
@@ -73,61 +77,75 @@ export function ItemDetailPage({ items, user }: { items: Item[]; user: AuthUser 
 
   return (
     <main
-      className="page-shell"
+      className="page-shell public-detail-shell"
       style={
         {
           '--page-background-image': `url(${campusImage})`,
         } as CSSProperties
       }
     >
-      <section className="detail-card">
+      <section className={`detail-card${showsClaimRequestForm ? ' claim-request-card' : ''}`}>
         <button
           type="button"
           className="detail-back-button"
-          onClick={() => navigate(isLoggedIn ? '/student-home' : '/')}
+          onClick={() => navigate(isLoggedIn ? '/student-home' : '/browse-items')}
         >
-          ← Back to Lost &amp; Found
+          ‹ Back
         </button>
 
         <div className="detail-layout">
           <div className="detail-image">
             {item.images && item.images.length > 0 ? (
-              <img src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`} alt={item.title} />
+              <img src={uploadUrl(item.images[0].objectKey)} alt={item.title} />
             ) : (
-              <span>{item.category?.name}</span>
+              <div className="detail-image-placeholder">
+                <PackageSearch size={58} strokeWidth={1.4} aria-hidden="true" />
+                <strong>No image available</strong>
+              </div>
             )}
           </div>
 
           <div className="detail-content">
-            <p className="eyebrow">FOUND ITEM</p>
-            <h1>{item.title}</h1>
+            <div className="detail-title-row">
+              <div>
+                <p className="eyebrow">FOUND ITEM</p>
+                <h1>{item.title}</h1>
+              </div>
+              <span className={`detail-status status-${item.status.toLowerCase()}`}>{formatStatus(item.status)}</span>
+            </div>
 
             <div className="detail-info-list">
               <div>
+                <Tag aria-hidden="true" />
                 <span>Category</span>
-                <strong>{item.category?.name}</strong>
+                <strong>{item.category?.name || 'Uncategorized'}</strong>
               </div>
               <div>
+                <MapPin aria-hidden="true" />
                 <span>Location</span>
                 <strong>{item.location}</strong>
               </div>
               <div>
+                <CalendarDays aria-hidden="true" />
                 <span>Reported</span>
                 <strong>{new Date(item.occurredAt).toLocaleDateString()}</strong>
               </div>
             </div>
 
-            <div className="detail-description" style={{ marginBottom: '24px' }}>
+            <div className="detail-description">
               <h3>Description</h3>
               <p>{item.description}</p>
             </div>
 
             {/* Check if item is already claimed or resolved */}
             {item.status === 'RESOLVED' ? (
-              <p style={{ color: '#2b7a78', fontWeight: 'bold' }}>✓ This item has been returned to its owner.</p>
+              <div className="detail-returned-message">
+                <CheckCircle2 aria-hidden="true" />
+                <span>This item has been returned to its owner.</span>
+              </div>
             ) : isLoggedIn && isStudent ? (
               /* Authenticated Student Claim Form */
-              <form onSubmit={handleClaimSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(255,255,255,0.6)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <form onSubmit={handleClaimSubmit} className="detail-claim-form">
                 {item.status === 'CLAIM_IN_PROGRESS' && (
                   <p style={{ color: '#a35d3f', fontSize: '0.9rem', fontWeight: 'bold', margin: 0 }}>
                     ⚠ A claim for this item is already under review, but you can still submit yours.
@@ -141,27 +159,26 @@ export function ItemDetailPage({ items, user }: { items: Item[]; user: AuthUser 
                     value={identifyingDetails}
                     onChange={(e) => setIdentifyingDetails(e.target.value)}
                     placeholder="Provide details that only the owner would know (e.g. keychains, brand details, contents inside, password)..."
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontFamily: 'inherit' }}
                     disabled={isSubmitting}
                   />
                 </label>
 
-                <label className="field">
+                <div className="field">
                   <span style={{ fontWeight: 'bold', color: '#594a3a' }}>Upload proof picture (receipt, serial number, photo of item)</span>
-                  <input
-                    type="file"
-                    accept="image/*"
+                  <FileUpload
                     disabled={isSubmitting}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
+                    selectedFileName={selectedFile?.name}
+                    onFileSelected={(file) => {
                       if (!file) {
+                        setSelectedFile(null);
+                        setImagePreview('');
                         return;
                       }
                       setSelectedFile(file);
                       setImagePreview(URL.createObjectURL(file));
                     }}
                   />
-                </label>
+                </div>
 
                 {imagePreview && (
                   <div style={{ width: '100%', maxHeight: '150px', overflow: 'hidden', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)' }}>
@@ -188,7 +205,7 @@ export function ItemDetailPage({ items, user }: { items: Item[]; user: AuthUser 
                 )}
               </form>
             ) : isLoggedIn && !isStudent ? (
-              <p style={{ color: '#918477' }}>Only students can submit claim requests.</p>
+              <p className="detail-role-notice"><ShieldCheck size={19} aria-hidden="true" /> Only students can submit claim requests.</p>
             ) : (
               /* Public / Not logged in */
               <div>
@@ -209,7 +226,7 @@ export function ItemDetailPage({ items, user }: { items: Item[]; user: AuthUser 
                     <button
                       type="button"
                       className="claim-login-button"
-                      onClick={() => navigate(`/student-login?redirect=/item/${item.id}`)}
+                      onClick={() => navigate('/login')}
                     >
                       Student Login
                     </button>

@@ -9,7 +9,6 @@ export function StaffClaimsPage({ claims }: { claims: StudentClaim[] }) {
       <section className="dashboard-card">
         <div className="dashboard-header">
           <div>
-            <p className="eyebrow">STAFF PORTAL</p>
             <h1>Student Claims</h1>
             <p>Review ownership claims submitted by students.</p>
           </div>
@@ -19,7 +18,7 @@ export function StaffClaimsPage({ claims }: { claims: StudentClaim[] }) {
             className="dashboard-logout"
             onClick={() => navigate('/staff-dashboard')}
           >
-            Back to Dashboard
+            ‹ Back
           </button>
         </div>
 

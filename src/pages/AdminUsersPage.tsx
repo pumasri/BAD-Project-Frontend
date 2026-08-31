@@ -1,5 +1,5 @@
-import { useState, useEffect, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { AdminTopNav } from '../components/AdminTopNav';
 import { api, ApiError } from '../utils';
 
 interface User {
@@ -11,7 +11,6 @@ interface User {
 }
 
 export function AdminUsersPage() {
-  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   // Filtering state
@@ -75,16 +74,13 @@ export function AdminUsersPage() {
   });
 
   return (
-    <main className="page-shell">
-      <section className="dashboard-card" style={{ position: 'relative' }}>
-        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
-          ← Back to Dashboard
-        </button>
+    <main className="page-shell admin-shell">
+      <section className="dashboard-card admin-content-card" style={{ position: 'relative' }}>
+        <AdminTopNav />
 
         {/* Header */}
         <div className="dashboard-header" style={{ alignItems: 'flex-start' }}>
           <div>
-            <p className="eyebrow">ADMIN PORTAL</p>
             <h1>User Management</h1>
             <p>Manage system access, roles, and user accounts.</p>
           </div>

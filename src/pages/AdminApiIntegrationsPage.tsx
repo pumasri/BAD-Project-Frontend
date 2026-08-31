@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { AdminTopNav } from '../components/AdminTopNav';
 import { api, ApiError } from '../utils';
 
 interface Partner {
@@ -21,7 +21,6 @@ interface Partner {
 }
 
 export function AdminApiIntegrationsPage() {
-  const navigate = useNavigate();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -81,15 +80,12 @@ export function AdminApiIntegrationsPage() {
   }
 
   return (
-    <main className="page-shell">
-      <section className="dashboard-card" style={{ position: 'relative' }}>
-        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
-          ← Back to Dashboard
-        </button>
+    <main className="page-shell admin-shell">
+      <section className="dashboard-card admin-content-card" style={{ position: 'relative' }}>
+        <AdminTopNav />
 
         <div className="dashboard-header" style={{ alignItems: 'flex-start' }}>
           <div>
-            <p className="eyebrow">ADMIN PORTAL</p>
             <h1>API Integrations</h1>
             <p>Manage x-api-key authentication and connections for Partner Teams.</p>
           </div>

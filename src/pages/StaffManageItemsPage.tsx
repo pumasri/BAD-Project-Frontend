@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { Inbox, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Item, ItemStatus } from '../types';
-import { campusImage, formatStatus } from '../utils';
+import { campusImage, formatStatus, uploadUrl } from '../utils';
 
 export function StaffManageItemsPage({ items }: { items: Item[] }) {
   const navigate = useNavigate();
@@ -37,18 +38,17 @@ export function StaffManageItemsPage({ items }: { items: Item[] }) {
         } as CSSProperties
       }
     >
-      <section className="dashboard-card">
+      <section className="dashboard-card staff-manage-page">
         <button
           type="button"
           className="detail-back-button"
           onClick={() => navigate('/staff-dashboard')}
         >
-          ← Back to Staff Dashboard
+          ‹ Back
         </button>
 
         <div className="dashboard-header">
           <div>
-            <p className="eyebrow">STAFF PORTAL</p>
             <h1>Manage Items</h1>
             <p>Review and manage all found items reported by staff.</p>
           </div>
@@ -56,6 +56,7 @@ export function StaffManageItemsPage({ items }: { items: Item[] }) {
 
         <div className="staff-item-toolbar">
           <div className="staff-item-search">
+            <Search size={19} aria-hidden="true" />
             <input
               type="search"
               value={search}
@@ -93,14 +94,14 @@ export function StaffManageItemsPage({ items }: { items: Item[] }) {
               <article key={item.id} className="staff-item-row">
                 <div className="staff-item-thumbnail">
                   {item.images && item.images.length > 0 ? (
-                    <img src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`} alt={item.title} />
+                    <img src={uploadUrl(item.images[0].objectKey)} alt={item.title} />
                   ) : (
-                    <span>{item.category?.name}</span>
+                    <Inbox size={38} strokeWidth={1.5} aria-hidden="true" />
                   )}
+                  <span>{item.category?.name || 'Uncategorized'}</span>
                 </div>
 
                 <div className="staff-item-main">
-                  <span className="item-category">{item.category?.name}</span>
                   <h3>{item.title}</h3>
                   <p>📍 {item.location}</p>
                   <small>Reported {new Date(item.occurredAt).toLocaleDateString()}</small>

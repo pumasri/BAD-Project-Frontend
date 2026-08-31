@@ -55,7 +55,7 @@ export function StaffItemDetailPage({
           className="detail-back-button"
           onClick={() => navigate('/staff/items')}
         >
-          ← Back to Manage Items
+          ‹ Back
         </button>
 
         <div className="detail-layout">
@@ -70,7 +70,7 @@ export function StaffItemDetailPage({
           <div className="detail-content">
             <p className="eyebrow">STAFF ITEM MANAGEMENT</p>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div className="staff-edit-title-row">
               <label className="field">
                 <span>Item Name</span>
                 <input
@@ -79,6 +79,23 @@ export function StaffItemDetailPage({
                   onChange={(e) => setTitle(e.target.value)}
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '1.5rem', fontWeight: 'bold' }}
                 />
+              </label>
+              <label className="staff-edit-status-field">
+                <span className="status-badge status-label">Status</span>
+                <select
+                  value={status}
+                  onChange={(event) =>
+                    setStatus(event.target.value as ItemStatus)
+                  }
+                >
+                  <option value="OPEN">Open</option>
+                  <option value="MATCHED">Matched</option>
+                  <option value="CLAIM_IN_PROGRESS">Claim In Progress</option>
+                  <option value="RESOLVED">Resolved</option>
+                  <option value="DONATED">Donated</option>
+                  <option value="DISPOSED">Disposed</option>
+                  <option value="ARCHIVED">Archived</option>
+                </select>
               </label>
             </div>
 
@@ -113,27 +130,6 @@ export function StaffItemDetailPage({
                   rows={4}
                   style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontFamily: 'inherit' }}
                 />
-              </label>
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <label className="field">
-                <span>Item Status</span>
-                <select
-                  value={status}
-                  onChange={(event) =>
-                    setStatus(event.target.value as ItemStatus)
-                  }
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'white' }}
-                >
-                  <option value="OPEN">Open</option>
-                  <option value="MATCHED">Matched</option>
-                  <option value="CLAIM_IN_PROGRESS">Claim In Progress</option>
-                  <option value="RESOLVED">Resolved</option>
-                  <option value="DONATED">Donated</option>
-                  <option value="DISPOSED">Disposed</option>
-                  <option value="ARCHIVED">Archived</option>
-                </select>
               </label>
             </div>
 

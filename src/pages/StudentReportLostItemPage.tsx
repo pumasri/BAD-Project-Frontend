@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../utils';
+import { FileUpload } from '../components/FileUpload';
 
 export function StudentReportLostItemPage({
   onItemReported,
@@ -13,6 +14,7 @@ export function StudentReportLostItemPage({
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFileName, setImageFileName] = useState('');
 
   useEffect(() => {
     api.get('/categories').then(setCategories).catch(console.error);
@@ -164,29 +166,23 @@ export function StudentReportLostItemPage({
             ></textarea>
           </label>
 
-          <label className="field">
+          <div className="field">
             <span>Reference Photo (Optional)</span>
-            <input
-              type="file"
+            <FileUpload
               name="image"
-              accept="image/*"
               disabled={isLoading}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
+              selectedFileName={imageFileName}
+              onFileSelected={(file) => {
                 if (file) {
+                  setImageFileName(file.name);
                   setImagePreview(URL.createObjectURL(file));
                 } else {
+                  setImageFileName('');
                   setImagePreview(null);
                 }
               }}
-              style={{
-                padding: '8px',
-                border: '1px solid rgba(93, 82, 64, 0.2)',
-                borderRadius: '8px',
-                background: 'white',
-              }}
             />
-          </label>
+          </div>
 
           {imagePreview && (
             <div style={{ marginTop: '8px', width: '100%', maxHeight: '200px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)' }}>

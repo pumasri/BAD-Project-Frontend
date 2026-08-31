@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { AdminTopNav } from '../components/AdminTopNav';
 import type { AuthUser } from '../types';
 
 export function AdminProfilePage({
@@ -8,19 +8,15 @@ export function AdminProfilePage({
   user: AuthUser;
   onLogout: () => void | Promise<void>;
 }) {
-  const navigate = useNavigate();
   const initial = user.name.trim().charAt(0).toUpperCase() || 'A';
 
   return (
-    <main className="page-shell">
-      <section className="dashboard-card admin-profile-card">
-        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
-          ← Back to Dashboard
-        </button>
+    <main className="page-shell admin-shell">
+      <section className="dashboard-card admin-profile-card admin-content-card">
+        <AdminTopNav />
 
         <div className="dashboard-header">
           <div>
-            <p className="eyebrow">ADMIN PORTAL</p>
             <h1>Profile</h1>
             <p>Your Lost &amp; Found administrator account.</p>
           </div>

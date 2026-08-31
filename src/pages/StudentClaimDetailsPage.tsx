@@ -86,7 +86,7 @@ export function StudentClaimDetailsPage() {
           className="detail-back-button"
           onClick={() => navigate('/student-claims')}
         >
-          ← Back to Claims
+          ‹ Back to Claims
         </button>
 
         <div style={{ marginBottom: '32px' }}>

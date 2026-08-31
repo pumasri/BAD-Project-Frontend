@@ -124,12 +124,3 @@ export interface MatchDetail extends MatchScores {
   foundReport: Item;
   reviewer?: { id: string; fullName: string } | null;
 }
-
-export type LoginPageConfig = {
-  role: 'student' | 'staff' | 'admin';
-  title: string;
-  description: string;
-  emailLabel: string;
-  emailPlaceholder: string;
-  showSignup?: boolean;
-};

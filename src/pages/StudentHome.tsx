@@ -1,10 +1,12 @@
 import { CSSProperties, useState, useEffect } from 'react';
+import { UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { campusImage, api } from '../utils';
-
-
+import lostAndFoundLogo from '../assets/images/l-and-f-logo-transparent.png';
 
 import type { StudentClaim, Item } from '../types';
+
+const DASHBOARD_CARD_LIMIT = 12;
 
 export function StudentHome({ onLogout, claims, items }: { onLogout: () => void, claims: StudentClaim[], items: Item[] }) {
   const navigate = useNavigate();
@@ -48,6 +50,9 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
     }
   };
 
+  const myLostItems = items.filter(item => item.reportType === 'LOST' && item.createdBy?.id === userId);
+  const recentFoundItems = items.filter(item => item.reportType === 'FOUND');
+
   return (
     <main
       className="page-shell student-shell"
@@ -60,13 +65,10 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
       <section className="student-dashboard">
         {/* Header */}
         <header className="student-header">
-          <div>
-            <p className="eyebrow">STUDENT PORTAL</p>
-            <h1>Welcome back, {userName.split(' ')[0]}</h1>
-            <p className="student-header-description">
-              Find lost items, report something you lost, and manage your
-              claims.
-            </p>
+          <div className="student-header-copy">
+            <div className="student-portal-brand" aria-label="AU Lost and Found">
+              <span><img src={lostAndFoundLogo} alt="" /></span>
+            </div>
           </div>
 
           <div className="student-profile-dropdown-container" onClick={(e) => e.stopPropagation()}>
@@ -76,7 +78,8 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               title="My Account"
             >
-              {userName[0]?.toUpperCase() || 'S'}
+              <UserRound size={20} aria-hidden="true" />
+              <span>My Account</span>
             </button>
 
             {isProfileOpen && (
@@ -116,7 +119,7 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
           <div className="student-section-heading">
             <div>
               <p className="eyebrow">QUICK ACTIONS</p>
-              <h2>What would you like to do?</h2>
+              <h2>Quick actions</h2>
             </div>
           </div>
 
@@ -131,12 +134,11 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
               <div>
                 <strong>Find an Item</strong>
                 <p>
-                  Browse recently reported lost and found items around
-                  campus.
+                  Browse campus reports.
                 </p>
               </div>
 
-              <span className="action-arrow">→</span>
+              <span className="action-arrow" aria-hidden="true">›</span>
             </button>
 
             <button
@@ -149,12 +151,11 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
               <div>
                 <strong>Report Lost Item</strong>
                 <p>
-                  Tell us what you lost so we can help find a possible
-                  match.
+                  Add a lost item report.
                 </p>
               </div>
 
-              <span className="action-arrow">→</span>
+              <span className="action-arrow" aria-hidden="true">›</span>
             </button>
 
             <button
@@ -167,11 +168,11 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
               <div>
                 <strong>My Claims</strong>
                 <p>
-                  Check the status of your submitted ownership claims.
+                  View claim status.
                 </p>
               </div>
 
-              <span className="action-arrow">→</span>
+              <span className="action-arrow" aria-hidden="true">›</span>
             </button>
           </div>
         </section>
@@ -211,7 +212,7 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
           <div className="student-section-heading">
             <div>
               <p className="eyebrow">MY CLAIMS</p>
-              <h2>Recent claims</h2>
+              <h2>Recent Claims</h2>
             </div>
 
             <button
@@ -219,106 +220,114 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
               className="student-section-link"
               onClick={() => navigate('/student-claims')}
             >
-              View all →
+              View all ›
             </button>
           </div>
 
-          <div className="student-claims-list">
-            {claims.map((claim) => (
-              <button
-                type="button"
+          <div className="student-card-grid">
+            {claims.slice(0, DASHBOARD_CARD_LIMIT).map((claim) => (
+              <article
                 key={claim.id}
-                className="student-claim-card"
-                onClick={() => navigate(`/student-claims/${claim.id}`)}
+                className="student-lost-card student-claim-feature-card"
               >
-                <div className="student-claim-icon" style={{ borderRadius: '50%', overflow: 'hidden' }}>
+                <div className="student-lost-card-image">
                   {claim.foundReport?.images && claim.foundReport.images.length > 0 ? (
                     <img
                       src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${claim.foundReport.images[0].objectKey}`}
                       alt={claim.foundReport.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   ) : (
-                    "◈"
+                    "?"
                   )}
-                </div>
-
-                <div className="student-claim-content">
-                  <strong style={{ display: 'block', fontSize: '1.05rem', color: '#594a3a', marginBottom: '2px' }}>{claim.foundReport?.title || 'Unknown Item'}</strong>
-                  <span style={{ fontSize: '0.85rem', color: '#918477' }}>
-                    {claim.foundReport?.category?.name || 'Uncategorized'} &middot; {claim.foundReport?.location || 'Location not specified'}
+                  <span className="student-card-category">
+                    {claim.foundReport?.category?.name || 'Uncategorized'}
                   </span>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#a89c92' }}>
-                    Submitted {new Date(claim.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </p>
-                </div>
-
-                <div className="student-claim-status">
                   <span
                     className={
                       claim.status === "MORE_INFORMATION_REQUIRED"
-                        ? 'status-badge status-match'
-                        : 'status-badge status-review'
+                        ? 'status-badge status-match student-card-status'
+                        : 'status-badge status-review student-card-status'
                     }
                   >
                     {formatStatus(claim.status)}
                   </span>
-
-                  <span className="action-arrow">→</span>
                 </div>
-              </button>
+
+                <div className="student-lost-card-content">
+                  <strong>{claim.foundReport?.title || 'Unknown Item'}</strong>
+                  <span>{claim.foundReport?.location || 'Location not specified'}</span>
+                  <p>
+                    Submitted {new Date(claim.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+
+                <div className="student-lost-card-footer">
+                  <button
+                    type="button"
+                    className="student-card-view-button"
+                    onClick={() => navigate(`/student-claims/${claim.id}`)}
+                  >
+                    Detail ›
+                  </button>
+                </div>
+              </article>
             ))}
           </div>
         </section>
 
-        {/* My Lost Reports */}
+        {/* My Lost Items */}
         <section className="student-section">
           <div className="student-section-heading">
             <div>
-              <p className="eyebrow">MY LOST REPORTS</p>
-              <h2>Items I reported lost</h2>
+              <p className="eyebrow">MY LOST ITEMS</p>
+              <h2>My Lost Items</h2>
             </div>
+            {myLostItems.length > DASHBOARD_CARD_LIMIT && (
+              <button
+                type="button"
+                className="student-section-link"
+                onClick={() => navigate('/student-report-lost')}
+              >
+                View all ›
+              </button>
+            )}
           </div>
 
-          <div className="student-claims-list">
-            {items.filter(item => item.reportType === 'LOST' && item.createdBy?.id === userId).length > 0 ? (
-              items.filter(item => item.reportType === 'LOST' && item.createdBy?.id === userId).map((item) => (
-                <div key={item.id} className="student-claim-card" style={{ cursor: 'default', background: 'rgba(255, 255, 255, 0.5)' }}>
-                  <div className="student-claim-icon" style={{ borderRadius: '12px', overflow: 'hidden', background: 'rgba(217, 48, 37, 0.1)', color: '#d93025' }}>
+          <div className="student-card-grid">
+            {myLostItems.length > 0 ? (
+              myLostItems.slice(0, DASHBOARD_CARD_LIMIT).map((item) => (
+                <article key={item.id} className="student-lost-card">
+                  <div className="student-lost-card-image">
                     {item.images && item.images.length > 0 ? (
                       <img
                         src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`}
                         alt={item.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     ) : (
                       "?"
                     )}
                   </div>
 
-                  <div className="student-claim-content" style={{ flex: 1 }}>
-                    <strong style={{ display: 'block', margin: '0 0 2px 0', fontSize: '1.05rem', color: '#594a3a' }}>{item.title}</strong>
-                    <span style={{ fontSize: '0.85rem', color: '#918477', display: 'block', marginBottom: '4px' }}>
+                  <div className="student-lost-card-content">
+                    <strong>{item.title}</strong>
+                    <span>
                       {item.category?.name || 'Uncategorized'} &middot; {item.location}
                     </span>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#a89c92' }}>
+                    <p>
                       Reported {new Date(item.occurredAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </p>
                   </div>
 
-                  <div className="student-claim-status">
-                    <span className="status-badge status-review">
-                      {formatStatus(item.status)}
-                    </span>
+                  <div className="student-lost-card-footer">
                     <button
                       type="button"
-                      className="student-section-link"
+                      className="student-card-view-button"
                       onClick={() => navigate(`/student/lost-reports/${item.id}/matches`)}
                     >
-                      Suggested Matches →
+                      Detail ›
                     </button>
                   </div>
-                </div>
+                </article>
               ))
             ) : (
               <p style={{ color: '#918477', fontStyle: 'italic', margin: '8px 0 0 0' }}>You haven't reported any lost items yet.</p>
@@ -339,12 +348,12 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
               className="student-section-link"
               onClick={() => navigate('/student-find-item')}
             >
-              Browse all →
+              Browse all ›
             </button>
           </div>
 
           <div className="student-items-grid">
-            {items.filter(item => item.reportType === 'FOUND').slice(0, 3).map((item) => (
+            {recentFoundItems.slice(0, DASHBOARD_CARD_LIMIT).map((item) => (
               <button
                 type="button"
                 key={item.id}
@@ -358,16 +367,15 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                       alt={item.title}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     />
-                  ) : (
-                    <span>{item.category?.name}</span>
-                  )}
+                  ) : null}
+                  <span>{item.category?.name || 'Uncategorized'}</span>
                 </div>
 
                 <div className="student-mini-item-content">
-                  <span>{item.category?.name}</span>
                   <strong>{item.title}</strong>
                   <p>📍 {item.location}</p>
                   <small>{new Date(item.occurredAt).toLocaleDateString()}</small>
+                  <span className="student-mini-detail">Detail ›</span>
                 </div>
               </button>
             ))}

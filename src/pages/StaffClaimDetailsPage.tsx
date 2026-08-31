@@ -114,7 +114,7 @@ export function StaffClaimDetailsPage() {
           onClick={() => navigate('/staff/claims')}
           style={{ marginBottom: '24px' }}
         >
-          ← Back to Claims
+          ‹ Back
         </button>
 
         <div className="dashboard-header" style={{ marginBottom: '32px' }}>

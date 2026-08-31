@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { AdminTopNav } from '../components/AdminTopNav';
 import { api } from '../utils';
 
 interface AuditLog {
@@ -16,7 +16,6 @@ interface AuditLog {
 }
 
 export function AdminAuditLogsPage() {
-  const navigate = useNavigate();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -67,15 +66,12 @@ export function AdminAuditLogsPage() {
   const categoryActions = filteredLogs.filter(l => l.entityType === 'ItemCategory').length;
 
   return (
-    <main className="page-shell">
-      <section className="dashboard-card admin-table-card">
-        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
-          ← Back to Dashboard
-        </button>
+    <main className="page-shell admin-shell">
+      <section className="dashboard-card admin-table-card admin-content-card">
+        <AdminTopNav />
 
         <div className="dashboard-header">
           <div>
-            <p className="eyebrow">ADMIN PORTAL</p>
             <h1>Audit Logs</h1>
             <p>View and track important actions and changes in the system.</p>
           </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, FormEvent, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError, campusImage } from '../utils';
+import { FileUpload } from '../components/FileUpload';
 
 interface Category {
   id: string;
@@ -90,18 +91,17 @@ export function ReportFoundItemPage({
         } as CSSProperties
       }
     >
-      <section className="report-card">
+      <section className="report-card staff-report-page">
         <button
           type="button"
           className="detail-back-button"
           onClick={() => navigate('/staff-dashboard')}
           disabled={isLoading}
         >
-          ← Back to Staff Dashboard
+          ‹ Back
         </button>
 
         <div className="card-heading">
-          <p className="eyebrow">STAFF PORTAL</p>
           <h1>Report Found Item</h1>
           <p>Add information about an item that was found on campus.</p>
         </div>
@@ -175,15 +175,15 @@ export function ReportFoundItemPage({
             />
           </label>
 
-          <label className="field">
+          <div className="field">
             <span>Item Image</span>
-            <input
-              type="file"
-              accept="image/*"
+            <FileUpload
               disabled={isLoading}
-              onChange={(event) => {
-                const file = event.target.files?.[0];
+              selectedFileName={selectedFile?.name}
+              onFileSelected={(file) => {
                 if (!file) {
+                  setSelectedFile(null);
+                  setImagePreview('');
                   return;
                 }
                 setSelectedFile(file);
@@ -191,7 +191,7 @@ export function ReportFoundItemPage({
                 setImagePreview(imageUrl);
               }}
             />
-          </label>
+          </div>
 
           {imagePreview && (
             <div className="image-preview">

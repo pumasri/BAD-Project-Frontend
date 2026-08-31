@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { AdminTopNav } from '../components/AdminTopNav';
 import type {
   Item,
   MatchConfidence,
@@ -44,8 +45,8 @@ export function MatchReviewPage({ role, items }: { role: Extract<Role, 'STAFF' |
   const [matches, setMatches] = useState<MatchDetail[]>([]);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('ALL');
   const [confidenceFilter, setConfidenceFilter] = useState<FilterConfidence>('ALL');
-  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [selectedReportId, setSelectedReportId] = useState('');
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
   const [reviewing, setReviewing] = useState(false);
@@ -82,28 +83,6 @@ export function MatchReviewPage({ role, items }: { role: Extract<Role, 'STAFF' |
     void loadMatches();
   }, [loadMatches]);
 
-  async function runMatching() {
-    if (!selectedReportId || running) return;
-    setRunning(true);
-    setMessage('');
-    setError('');
-    try {
-      const result = await api.post<{ matches: MatchDetail[] }>(
-        `/items/${selectedReportId}/matches/run`,
-      );
-      setMessage(
-        result.matches.length
-          ? `Matching completed with ${result.matches.length} qualifying suggestion(s).`
-          : 'Matching completed. No qualifying suggestions were found.',
-      );
-      await loadMatches();
-    } catch (requestError) {
-      setError(errorMessage(requestError));
-    } finally {
-      setRunning(false);
-    }
-  }
-
   async function reviewMatch(match: MatchDetail, status: 'CONFIRMED' | 'REJECTED') {
     if (reviewing || match.status !== 'SUGGESTED') return;
     const verb = status === 'CONFIRMED' ? 'confirm' : 'reject';
@@ -123,56 +102,74 @@ export function MatchReviewPage({ role, items }: { role: Extract<Role, 'STAFF' |
     }
   }
 
+  async function runMatching() {
+    if (!selectedReportId || running) return;
+
+    setRunning(true);
+    setMessage('');
+    setError('');
+    try {
+      await api.post<{ matches: MatchDetail[] }>(`/items/${selectedReportId}/matches/run`, {});
+      setMessage('Matching completed. Review the latest suggestions below.');
+      await loadMatches();
+    } catch (requestError) {
+      setError(errorMessage(requestError));
+    } finally {
+      setRunning(false);
+    }
+  }
+
   const selectedMatch = matches.find((match) => match.id === selectedMatchId) || null;
   const dashboardPath = role === 'STAFF' ? '/staff-dashboard' : '/admin-dashboard';
 
   return (
     <main
-      className="page-shell"
+      className={`page-shell${role === 'ADMIN' ? ' admin-shell' : ''}`}
       style={{ '--page-background-image': `url(${campusImage})` } as CSSProperties}
     >
-      <section className="dashboard-card match-page">
-        <button type="button" className="detail-back-button" onClick={() => navigate(dashboardPath)}>
-          ← Back to Dashboard
-        </button>
+      <section className={`dashboard-card match-page staff-match-page${role === 'ADMIN' ? ' admin-content-card' : ''}`}>
+        {role === 'ADMIN' ? (
+          <AdminTopNav />
+        ) : (
+          <button type="button" className="detail-back-button" onClick={() => navigate(dashboardPath)}>
+            ‹ Back
+          </button>
+        )}
 
         <div className="match-page-heading">
           <div>
-            <p className="eyebrow">{role} PORTAL</p>
             <h1>AI Match Review</h1>
             <p>Review suggestions before any ownership or claim decision is made.</p>
           </div>
         </div>
 
-        <section className="match-run-panel">
+        <section className="match-run-panel staff-match-run-panel">
           <div>
+            <span className="eyebrow">Matching Workbench</span>
             <h2>Run matching manually</h2>
-            <p>Retry AI-assisted matching for an eligible lost or found report.</p>
+            <p>Choose an eligible lost or found report and refresh its suggested matches.</p>
           </div>
-          <select
-            value={selectedReportId}
-            onChange={(event) => setSelectedReportId(event.target.value)}
-            disabled={running}
-            aria-label="Eligible item report"
-          >
-            <option value="">Select a report</option>
-            {eligibleItems.map((item) => (
-              <option value={item.id} key={item.id}>
-                {item.reportType}: {item.title} — {item.location}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            className="submit-button"
-            onClick={runMatching}
-            disabled={!selectedReportId || running}
-          >
-            {running ? 'Running…' : 'Run matching'}
-          </button>
+          <div className="match-run-controls">
+            <select value={selectedReportId} onChange={(event) => setSelectedReportId(event.target.value)}>
+              <option value="">Select a report</option>
+              {eligibleItems.map((item) => (
+                <option value={item.id} key={item.id}>
+                  {item.reportType}: {item.title} · {item.location}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="submit-button"
+              disabled={!selectedReportId || running}
+              onClick={runMatching}
+            >
+              {running ? 'Running...' : 'Run matching'}
+            </button>
+          </div>
         </section>
 
-        <div className="match-filter-bar">
+        <div className="match-filter-bar staff-match-filter-bar">
           <label>
             <span>Status</span>
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as FilterStatus)}>

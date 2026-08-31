@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { AuthUser } from '../types';
-import { completeMicrosoftLogin } from '../services/authService';
-import { startMicrosoftLogin } from '../services/microsoftAuthService';
+import { completeMicrosoftLogin, getMicrosoftLoginUrl } from '../services/authService';
 import campusImage from '../assets/images/abacCampus.jpeg';
+import lostAndFoundLogo from '../assets/images/l-and-f-logo.png';
 import './LoginPage.css';
 
 export function LoginPage({
@@ -29,6 +29,7 @@ export function LoginPage({
     if (microsoftError) {
       const messages: Record<string, string> = {
         account_inactive: 'This account is inactive.',
+        account_setup_failed: 'Microsoft sign-in succeeded, but your local account could not be prepared. Check the backend database migrations and roles.',
         authentication_failed: 'Microsoft sign-in could not be verified.',
       };
       setErrorMessage(messages[microsoftError] || 'Microsoft sign-in failed.');
@@ -53,12 +54,27 @@ export function LoginPage({
     setErrorMessage('');
     setLoading(true);
 
-    startMicrosoftLogin();
+    window.location.assign(getMicrosoftLoginUrl());
   }
 
   return (
     <main className="role-login-shell">
       <section className="role-login-layout">
+        <img
+          src={lostAndFoundLogo}
+          alt="AU Lost & Found"
+          className="role-login-logo"
+        />
+
+        <button
+          type="button"
+          className="role-login-close"
+          onClick={() => navigate('/')}
+          aria-label="Close sign in and return to homepage"
+        >
+          &times;
+        </button>
+
         <aside className="role-login-campus">
           <img src={campusImage} alt="ABAC Campus" className="role-campus-image" />
           <div className="role-campus-overlay" />
@@ -70,17 +86,8 @@ export function LoginPage({
         </aside>
 
         <div className="role-login-card">
-          <button
-            type="button"
-            className="role-login-close"
-            onClick={() => navigate('/')}
-            aria-label="Close login and return to homepage"
-          >
-            &times;
-          </button>
-
           <div className="role-form-heading">
-            <span className="role-login-kicker">Login</span>
+            <span className="role-login-kicker">Sign in</span>
             <p>Sign in using your AU Microsoft account.</p>
           </div>
 
@@ -94,7 +101,9 @@ export function LoginPage({
               <span className="role-microsoft-mark" aria-hidden="true">
                 <span /><span /><span /><span />
               </span>
-              {loading ? 'Signing in...' : 'Sign in with Microsoft'}
+              <span className="role-microsoft-label">
+                {loading ? 'Signing in...' : 'Sign in'}
+              </span>
             </button>
           </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { AdminTopNav } from '../components/AdminTopNav';
 import { api, ApiError } from '../utils';
 
 interface Category {
@@ -10,7 +10,6 @@ interface Category {
 }
 
 export function AdminCategoriesPage() {
-  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -121,16 +120,13 @@ export function AdminCategoriesPage() {
   });
 
   return (
-    <main className="page-shell">
-      <section className="dashboard-card" style={{ position: 'relative' }}>
-        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
-          ← Back to Dashboard
-        </button>
+    <main className="page-shell admin-shell">
+      <section className="dashboard-card admin-content-card" style={{ position: 'relative' }}>
+        <AdminTopNav />
 
         {/* Header */}
         <div className="dashboard-header" style={{ alignItems: 'flex-start' }}>
           <div>
-            <p className="eyebrow">ADMIN PORTAL</p>
             <h1>Categories</h1>
             <p>Manage item categories for lost and found reports.</p>
           </div>
