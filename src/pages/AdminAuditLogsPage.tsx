@@ -68,21 +68,17 @@ export function AdminAuditLogsPage() {
 
   return (
     <main className="page-shell">
-      <section className="dashboard-card" style={{ position: 'relative' }}>
-        {/* Header */}
-        <div className="dashboard-header" style={{ alignItems: 'flex-start' }}>
+      <section className="dashboard-card admin-table-card">
+        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
+          ← Back to Dashboard
+        </button>
+
+        <div className="dashboard-header">
           <div>
             <p className="eyebrow">ADMIN PORTAL</p>
             <h1>Audit Logs</h1>
             <p>View and track important actions and changes in the system.</p>
           </div>
-          <button
-            type="button"
-            className="dashboard-logout"
-            onClick={() => navigate('/admin-dashboard')}
-          >
-            Back to Dashboard
-          </button>
         </div>
 
         {/* Summary Cards */}

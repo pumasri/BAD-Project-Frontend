@@ -1,8 +1,7 @@
-import type { CSSProperties } from 'react';
+import { CSSProperties, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Item } from '../types';
-import { campusImage } from '../utils';
-import { LogoutButton } from '../components/LogoutButton';
+import { campusImage, api } from '../utils';
 
 export function StaffDashboard({
   items,
@@ -13,6 +12,27 @@ export function StaffDashboard({
 }) {
   const navigate = useNavigate();
   const recentItems = items.filter((item) => item.reportType === 'FOUND').slice(0, 3);
+  
+  const [userName, setUserName] = useState('Staff');
+  const [userEmail, setUserEmail] = useState('');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClick = () => setIsProfileOpen(false);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  useEffect(() => {
+    api.get('/auth/me')
+      .then(res => {
+        if (res?.user) {
+          setUserName(res.user.name || 'Staff');
+          setUserEmail(res.user.email || '');
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <main
@@ -24,7 +44,7 @@ export function StaffDashboard({
       }
     >
       <section className="dashboard-card">
-        <div className="dashboard-header">
+        <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <p className="eyebrow">STAFF PORTAL</p>
             <h1>Staff Dashboard</h1>
@@ -33,15 +53,45 @@ export function StaffDashboard({
             </p>
           </div>
 
-          <div className="dashboard-header-actions">
+          <div className="student-profile-dropdown-container" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
-              className="dashboard-logout"
-              onClick={() => navigate('/staff-profile')}
+              className="student-profile-avatar-btn"
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              title="My Account"
             >
-              Profile
+              {userName[0]?.toUpperCase() || 'S'}
             </button>
-            <LogoutButton onLogout={onLogout} />
+
+            {isProfileOpen && (
+              <div className="student-profile-dropdown">
+                <div className="student-profile-info">
+                  <p className="eyebrow">MY ACCOUNT</p>
+                  <h2>{userName}</h2>
+                  <p>{userEmail || 'staff@au.edu'}</p>
+                </div>
+                
+                <div className="student-profile-actions">
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => {
+                      navigate('/staff-profile');
+                      setIsProfileOpen(false);
+                    }}
+                  >
+                    View Profile
+                  </button>
+                  <button
+                    type="button"
+                    className="dashboard-logout dropdown-logout"
+                    onClick={onLogout}
+                  >
+                    Log out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

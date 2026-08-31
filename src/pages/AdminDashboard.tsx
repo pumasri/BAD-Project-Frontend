@@ -1,7 +1,6 @@
-import type { CSSProperties } from 'react';
+import { CSSProperties, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { campusImage } from '../utils';
-import { LogoutButton } from '../components/LogoutButton';
+import { campusImage, api } from '../utils';
 
 export function AdminDashboard({
   onLogout,
@@ -9,6 +8,27 @@ export function AdminDashboard({
   onLogout: () => void | Promise<void>;
 }) {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState('Admin');
+  const [userEmail, setUserEmail] = useState('');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClick = () => setIsProfileOpen(false);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  useEffect(() => {
+    api.get('/auth/me')
+      .then(res => {
+        if (res?.user) {
+          setUserName(res.user.name || 'Admin');
+          setUserEmail(res.user.email || '');
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   return (
     <main
       className="page-shell"
@@ -19,22 +39,52 @@ export function AdminDashboard({
       }
     >
       <section className="dashboard-card">
-        <div className="dashboard-header">
+        <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <p className="eyebrow">ADMIN PORTAL</p>
             <h1>Admin Dashboard</h1>
             <p>Manage users, categories, audit logs, and system settings.</p>
           </div>
 
-          <div className="dashboard-header-actions">
+          <div className="student-profile-dropdown-container" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
-              className="dashboard-logout"
-              onClick={() => navigate('/admin-profile')}
+              className="student-profile-avatar-btn"
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              title="My Account"
             >
-              Profile
+              {userName[0]?.toUpperCase() || 'A'}
             </button>
-            <LogoutButton onLogout={onLogout} />
+
+            {isProfileOpen && (
+              <div className="student-profile-dropdown">
+                <div className="student-profile-info">
+                  <p className="eyebrow">MY ACCOUNT</p>
+                  <h2>{userName}</h2>
+                  <p>{userEmail || 'admin@au.edu'}</p>
+                </div>
+                
+                <div className="student-profile-actions">
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => {
+                      navigate('/admin-profile');
+                      setIsProfileOpen(false);
+                    }}
+                  >
+                    View Profile
+                  </button>
+                  <button
+                    type="button"
+                    className="dashboard-logout dropdown-logout"
+                    onClick={onLogout}
+                  >
+                    Log out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

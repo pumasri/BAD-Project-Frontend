@@ -11,7 +11,14 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
   const [userName, setUserName] = useState('Student');
   const [userEmail, setUserEmail] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  // Close dropdown if clicked outside (simple effect)
+  useEffect(() => {
+    const handleClick = () => setIsProfileOpen(false);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
   useEffect(() => {
     api.get('/auth/me')
       .then(res => {
@@ -62,13 +69,46 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
             </p>
           </div>
 
-          <button
-            type="button"
-            className="dashboard-logout"
-            onClick={onLogout}
-          >
-            Log out
-          </button>
+          <div className="student-profile-dropdown-container" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="student-profile-avatar-btn"
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              title="My Account"
+            >
+              {userName[0]?.toUpperCase() || 'S'}
+            </button>
+
+            {isProfileOpen && (
+              <div className="student-profile-dropdown">
+                <div className="student-profile-info">
+                  <p className="eyebrow">MY ACCOUNT</p>
+                  <h2>{userName}</h2>
+                  <p>{userEmail || 'uXXXXXXXX@au.edu'}</p>
+                </div>
+                
+                <div className="student-profile-actions">
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => {
+                      navigate('/student-profile');
+                      setIsProfileOpen(false);
+                    }}
+                  >
+                    View Profile
+                  </button>
+                  <button
+                    type="button"
+                    className="dashboard-logout dropdown-logout"
+                    onClick={onLogout}
+                  >
+                    Log out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </header>
 
         {/* Quick Actions */}
@@ -334,24 +374,6 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
           </div>
         </section>
 
-        {/* Profile */}
-        <section className="student-profile-card">
-          <div className="student-profile-avatar">{userName[0]?.toUpperCase() || 'S'}</div>
-
-          <div className="student-profile-info">
-            <p className="eyebrow">MY ACCOUNT</p>
-            <h2>{userName}</h2>
-            <p>{userEmail || 'uXXXXXXXX@au.edu'}</p>
-          </div>
-
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={() => navigate('/student-profile')}
-          >
-            View Profile
-          </button>
-        </section>
       </section>
     </main>
   );

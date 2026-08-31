@@ -13,20 +13,17 @@ export function AdminProfilePage({
 
   return (
     <main className="page-shell">
-      <section className="dashboard-card admin-profile-page">
+      <section className="dashboard-card admin-profile-card">
+        <button type="button" className="detail-back-button" onClick={() => navigate('/admin-dashboard')}>
+          ← Back to Dashboard
+        </button>
+
         <div className="dashboard-header">
           <div>
             <p className="eyebrow">ADMIN PORTAL</p>
             <h1>Profile</h1>
             <p>Your Lost &amp; Found administrator account.</p>
           </div>
-          <button
-            type="button"
-            className="dashboard-logout"
-            onClick={() => navigate('/admin-dashboard')}
-          >
-            Back to Dashboard
-          </button>
         </div>
 
         <div className="admin-profile-summary">
