@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError, uploadUrl } from '../utils';
+import { FileUpload } from '../components/FileUpload';
 import type { StudentClaim } from '../types';
 
 export function StudentClaimDetailsPage() {
@@ -10,6 +11,10 @@ export function StudentClaimDetailsPage() {
   const [claim, setClaim] = useState<StudentClaim | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [additionalDetails, setAdditionalDetails] = useState('');
+  const [additionalEvidence, setAdditionalEvidence] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [responseMessage, setResponseMessage] = useState('');
 
   useEffect(() => {
     async function fetchClaim() {
@@ -31,6 +36,37 @@ export function StudentClaimDetailsPage() {
       fetchClaim();
     }
   }, [id]);
+
+  async function submitMoreInformation() {
+    if (!claim || !additionalDetails.trim()) {
+      setResponseMessage('Please provide the additional ownership details requested by staff.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setResponseMessage('');
+    try {
+      await api.patch(`/claims/${claim.id}/more-information`, {
+        identifyingDetails: additionalDetails.trim(),
+      });
+
+      if (additionalEvidence) {
+        const formData = new FormData();
+        formData.append('image', additionalEvidence);
+        await api.postForm(`/claims/${claim.id}/evidence`, formData);
+      }
+
+      const refreshedClaim = await api.get(`/claims/${claim.id}`);
+      setClaim(refreshedClaim);
+      setAdditionalDetails('');
+      setAdditionalEvidence(null);
+      setResponseMessage('Additional information submitted. Staff will review your claim again.');
+    } catch (err) {
+      setResponseMessage(err instanceof ApiError ? err.message : 'Failed to submit additional information.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -181,6 +217,42 @@ export function StudentClaimDetailsPage() {
                 <div style={{ padding: '16px', background: 'rgba(163, 93, 63, 0.05)', borderRadius: '12px', borderLeft: '4px solid #a35d3f' }}>
                   <p style={{ margin: '0 0 8px', fontSize: '0.85rem', color: '#a35d3f', fontWeight: 'bold', textTransform: 'uppercase' }}>Staff Note</p>
                   <p style={{ margin: 0, color: '#594a3a', fontStyle: 'italic', lineHeight: '1.6' }}>"{claim.reviewNote}"</p>
+                </div>
+              )}
+
+              {claim.status === 'MORE_INFORMATION_REQUIRED' && (
+                <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                  <h3 style={{ margin: '0 0 8px', color: '#a35d3f', fontSize: '1rem' }}>Submit More Evidence</h3>
+                  <p style={{ margin: '0 0 16px', color: '#594a3a', lineHeight: '1.5' }}>
+                    Reply to the staff note with the requested details or upload another proof image.
+                  </p>
+                  <textarea
+                    rows={4}
+                    value={additionalDetails}
+                    onChange={(event) => setAdditionalDetails(event.target.value)}
+                    placeholder="Enter the additional details requested by staff..."
+                    disabled={isSubmitting}
+                    style={{ width: '100%', boxSizing: 'border-box', padding: '12px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.15)', fontSize: '0.95rem', fontFamily: 'inherit', marginBottom: '12px' }}
+                  />
+                  <FileUpload
+                    disabled={isSubmitting}
+                    selectedFileName={additionalEvidence?.name}
+                    onFileSelected={setAdditionalEvidence}
+                  />
+                  <button
+                    type="button"
+                    className="submit-button"
+                    onClick={submitMoreInformation}
+                    disabled={isSubmitting || !additionalDetails.trim()}
+                    style={{ marginTop: '16px' }}
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit More Information'}
+                  </button>
+                  {responseMessage && (
+                    <p style={{ margin: '12px 0 0', color: responseMessage.startsWith('Additional') ? '#2b7a78' : '#d93025', fontWeight: 'bold' }}>
+                      {responseMessage}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

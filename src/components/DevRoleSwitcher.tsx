@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../utils/api';
+import { saveToken } from '../services/authService';
 
 export function DevRoleSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,7 +12,8 @@ export function DevRoleSwitcher() {
   async function switchRole(roleName: string) {
     setLoading(true);
     try {
-      await api.post('/auth/dev/switch-role', { roleName });
+      const auth = await api.post<{ token: string }>('/auth/dev/switch-role', { roleName });
+      saveToken(auth.token, true);
       // Reload the page to reset the app state and AuthContext
       window.location.reload();
     } catch (error) {
