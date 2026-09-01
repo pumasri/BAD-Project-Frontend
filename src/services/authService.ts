@@ -34,7 +34,7 @@ async function readResponse(response: Response) {
   return data;
 }
 
-function saveToken(token: string, rememberMe: boolean) {
+export function saveToken(token: string, rememberMe: boolean) {
   clearAuth();
   const storage = rememberMe ? localStorage : sessionStorage;
   storage.setItem(TOKEN_KEY, token);
