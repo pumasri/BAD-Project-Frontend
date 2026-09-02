@@ -188,7 +188,6 @@ export function HomePage({ items }: { items: Item[] }) {
         <nav aria-label="Footer navigation">
           <button type="button" onClick={() => navigate('/browse-items')}>Browse Items</button>
           <button type="button" onClick={() => navigate('/student-report-lost')}>Report Lost</button>
-          <button type="button" onClick={() => navigate('/staff/report-item')}>Report Found</button>
           <button type="button" onClick={() => navigate('/login')}>Login</button>
         </nav>
       </div></footer>

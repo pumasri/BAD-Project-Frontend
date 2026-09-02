@@ -70,9 +70,6 @@ export function StudentProfilePage({ onLogout }: { onLogout: () => void }) {
           <div>
             <h3 style={{ color: '#a35d3f', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>Account Settings</h3>
             <div style={{ background: 'rgba(255,255,255,0.6)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <button className="secondary-button" style={{ width: '100%', padding: '14px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', color: '#594a3a', fontWeight: 'bold', cursor: 'pointer' }}>
-                Change Password
-              </button>
               <button className="secondary-button" style={{ width: '100%', padding: '14px', background: 'rgba(163,93,63,0.1)', border: 'none', borderRadius: '12px', color: '#a35d3f', fontWeight: 'bold', cursor: 'pointer' }} onClick={onLogout}>
                 Log Out
               </button>
