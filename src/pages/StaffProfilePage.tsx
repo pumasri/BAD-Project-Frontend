@@ -66,9 +66,6 @@ export function StaffProfilePage({ onLogout }: { onLogout: () => void }) {
           <div>
             <h3 style={{ color: '#594a3a', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>Settings</h3>
             <div style={{ background: 'rgba(255,255,255,0.6)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <button className="secondary-button" style={{ width: '100%', padding: '14px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', color: '#594a3a', fontWeight: 'bold', cursor: 'pointer' }}>
-                Change Password
-              </button>
               <button className="secondary-button" style={{ width: '100%', padding: '14px', background: 'rgba(217, 83, 79, 0.1)', border: 'none', borderRadius: '12px', color: '#d9534f', fontWeight: 'bold', cursor: 'pointer' }} onClick={onLogout}>
                 Log Out
               </button>
