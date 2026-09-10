@@ -220,6 +220,10 @@ function App() {
         <Route path="/admin-categories" element={guard('ADMIN', <AdminCategoriesPage />)} />
         <Route path="/admin-audit-logs" element={guard('ADMIN', <AdminAuditLogsPage />)} />
         <Route
+          path="/admin/items/:id"
+          element={guard('ADMIN', <StaffItemDetailPage items={items} onUpdateItem={handleUpdateItem} readOnly backPath="/admin-dashboard" />)}
+        />
+        <Route
           path="/admin-api-integrations"
           element={guard('ADMIN', <AdminApiIntegrationsPage />)}
         />

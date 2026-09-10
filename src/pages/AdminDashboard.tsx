@@ -129,6 +129,14 @@ export function AdminDashboard({ items }: { items: Item[] }) {
                       <span>{item.reportType} · {item.category?.name || 'Uncategorized'}</span>
                     </div>
                     <span>{formatStatus(item.status)}</span>
+                    <button
+                      type="button"
+                      className="staff-manage-button"
+                      onClick={() => navigate(`/admin/items/${item.id}`)}
+                      style={{ minWidth: 'auto', padding: '8px 12px' }}
+                    >
+                      Review
+                    </button>
                   </div>
                 ))}
               </div>

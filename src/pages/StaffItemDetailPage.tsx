@@ -3,13 +3,18 @@ import type { CSSProperties } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Item, ItemStatus } from '../types';
 import { campusImage } from '../utils';
+import { MedicineBoxCheckPanel } from '../components/MedicineBoxCheckPanel';
 
 export function StaffItemDetailPage({
   items,
   onUpdateItem,
+  readOnly = false,
+  backPath = '/staff/items',
 }: {
   items: Item[];
   onUpdateItem: (item: Item) => void;
+  readOnly?: boolean;
+  backPath?: string;
 }) {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -22,7 +27,7 @@ export function StaffItemDetailPage({
   const [message, setMessage] = useState('');
 
   if (!item) {
-    navigate('/staff/items');
+    navigate(backPath);
     return null;
   }
 
@@ -53,7 +58,7 @@ export function StaffItemDetailPage({
         <button
           type="button"
           className="detail-back-button"
-          onClick={() => navigate('/staff/items')}
+          onClick={() => navigate(backPath)}
         >
           ‹ Back
         </button>
@@ -68,7 +73,7 @@ export function StaffItemDetailPage({
           </div>
 
           <div className="detail-content">
-            <p className="eyebrow">STAFF ITEM MANAGEMENT</p>
+            <p className="eyebrow">{readOnly ? 'ADMIN REPORT REVIEW' : 'STAFF ITEM MANAGEMENT'}</p>
 
             <div className="staff-edit-title-row">
               <label className="field">
@@ -77,6 +82,7 @@ export function StaffItemDetailPage({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  disabled={readOnly}
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '1.5rem', fontWeight: 'bold' }}
                 />
               </label>
@@ -87,6 +93,7 @@ export function StaffItemDetailPage({
                   onChange={(event) =>
                     setStatus(event.target.value as ItemStatus)
                   }
+                  disabled={readOnly}
                 >
                   <option value="OPEN">Open</option>
                   <option value="MATCHED">Matched</option>
@@ -110,6 +117,7 @@ export function StaffItemDetailPage({
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  disabled={readOnly}
                   style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)' }}
                 />
               </div>
@@ -127,22 +135,26 @@ export function StaffItemDetailPage({
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  disabled={readOnly}
                   rows={4}
                   style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontFamily: 'inherit' }}
                 />
               </label>
             </div>
 
-            <button
-              type="button"
-              className="claim-button"
-              onClick={saveChanges}
-              style={{ width: '100%' }}
-            >
-              Save Changes
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                className="claim-button"
+                onClick={saveChanges}
+                style={{ width: '100%' }}
+              >
+                Save Changes
+              </button>
+            )}
 
             {message && <p className="form-status" style={{ marginTop: '16px', color: '#2b7a78', fontWeight: 'bold' }}>{message}</p>}
+            {item.reportType === 'FOUND' && <MedicineBoxCheckPanel reportId={item.id} />}
           </div>
         </div>
       </section>
