@@ -6210,9 +6210,10 @@ body {
 
 .student-lost-card-image {
   position: relative;
-  display: grid;
+  display: flex;
   height: 148px;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   background: linear-gradient(145deg, #f7f8fa, #e2e7ee);
   color: #7a869c;
@@ -6232,8 +6233,9 @@ body {
 .student-mini-item-image {
   position: relative;
   height: 148px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   padding: 0;
   background: linear-gradient(145deg, #f7f8fa, #e2e7ee);
