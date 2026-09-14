@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { api, ApiError } from '../utils';
+import { api, ApiError , uploadUrl } from '../utils';
 import type { StudentClaim } from '../types';
 
 export function StaffClaimDetailsPage() {
@@ -157,7 +157,7 @@ export function StaffClaimDetailsPage() {
                   ev.evidenceType === 'IMAGE' && ev.objectKey && (
                     <div key={ev.id} style={{ maxWidth: '300px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)' }}>
                       <img
-                        src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${ev.objectKey}`}
+                        src={uploadUrl(ev.objectKey)}
                         alt="Proof of ownership"
                         style={{ width: '100%', height: 'auto', display: 'block' }}
                       />

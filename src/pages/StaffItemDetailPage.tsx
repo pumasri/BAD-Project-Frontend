@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Item, ItemStatus } from '../types';
-import { campusImage } from '../utils';
+import { campusImage , uploadUrl } from '../utils';
 
 export function StaffItemDetailPage({
   items,
@@ -61,7 +61,7 @@ export function StaffItemDetailPage({
         <div className="detail-layout">
           <div className="detail-image">
             {item.images && item.images.length > 0 ? (
-              <img src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`} alt={item.title} />
+              <img src={uploadUrl(item.images[0].objectKey)} alt={item.title} />
             ) : (
               <span>{item.category?.name}</span>
             )}

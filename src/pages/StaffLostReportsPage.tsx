@@ -1,7 +1,7 @@
 import { useState, useMemo, type CSSProperties, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Item, ItemStatus } from '../types';
-import { campusImage, api, formatStatus } from '../utils';
+import { campusImage, api, formatStatus , uploadUrl } from '../utils';
 
 export function StaffLostReportsPage({ items, onUpdate }: { items: Item[]; onUpdate: () => void }) {
   const navigate = useNavigate();
@@ -129,7 +129,7 @@ export function StaffLostReportsPage({ items, onUpdate }: { items: Item[]; onUpd
                 <div className="staff-lost-media">
                   <span className="staff-lost-type">LOST · {item.category?.name || 'Unknown'}</span>
                   {item.images && item.images.length > 0 ? (
-                    <img src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`} alt={item.title} />
+                    <img src={uploadUrl(item.images[0].objectKey)} alt={item.title} />
                   ) : (
                     <span className="staff-lost-placeholder">{item.category?.name || 'Item'}</span>
                   )}

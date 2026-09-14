@@ -1,7 +1,7 @@
 import { CSSProperties, useState, useEffect } from 'react';
 import { UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { campusImage, api } from '../utils';
+import { campusImage, api , uploadUrl } from '../utils';
 import lostAndFoundLogo from '../assets/images/l-and-f-logo-transparent.png';
 
 import type { StudentClaim, Item } from '../types';
@@ -233,7 +233,7 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                 <div className="student-lost-card-image">
                   {claim.foundReport?.images && claim.foundReport.images.length > 0 ? (
                     <img
-                      src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${claim.foundReport.images[0].objectKey}`}
+                      src={uploadUrl(claim.foundReport.images[0].objectKey)}
                       alt={claim.foundReport.title}
                     />
                   ) : (
@@ -300,7 +300,7 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                   <div className="student-lost-card-image">
                     {item.images && item.images.length > 0 ? (
                       <img
-                        src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`}
+                        src={uploadUrl(item.images[0].objectKey)}
                         alt={item.title}
                       />
                     ) : (
@@ -363,7 +363,7 @@ export function StudentHome({ onLogout, claims, items }: { onLogout: () => void,
                 <div className="student-mini-item-image">
                   {item.images && item.images.length > 0 ? (
                     <img
-                      src={`${((import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5050/api').replace('/api', '')}/uploads/${item.images[0].objectKey}`}
+                      src={uploadUrl(item.images[0].objectKey)}
                       alt={item.title}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     />
